@@ -1,0 +1,223 @@
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Property } from '@/types/database';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Building2, TrendingUp, Calendar, Star } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
+
+export default function Dashboard() {
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const { profile } = useAuth();
+
+  useEffect(() => {
+    fetchProperties();
+  }, []);
+
+  const fetchProperties = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .in('status', ['published', 'no_ads'])
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+      setProperties(data || []);
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredProperties = properties.filter((property) =>
+    property.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    property.property_number.toString().includes(searchQuery)
+  );
+
+  const stats = [
+    {
+      title: 'Всего объявлений',
+      value: properties.length,
+      icon: Building2,
+      color: 'text-primary',
+    },
+    {
+      title: 'Опубликовано',
+      value: properties.filter((p) => p.status === 'published').length,
+      icon: TrendingUp,
+      color: 'text-success',
+    },
+    {
+      title: 'Без рекламы',
+      value: properties.filter((p) => p.status === 'no_ads').length,
+      icon: Calendar,
+      color: 'text-warning',
+    },
+  ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'published':
+        return 'bg-success/10 text-success';
+      case 'no_ads':
+        return 'bg-warning/10 text-warning';
+      default:
+        return 'bg-muted text-muted-foreground';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'published':
+        return 'Опубликовано';
+      case 'no_ads':
+        return 'Без рекламы';
+      case 'sold':
+        return 'Продано';
+      case 'deleted':
+        return 'Удалено';
+      default:
+        return status;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-8 space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-4xl font-bold text-foreground mb-2">
+          Дежурка
+        </h1>
+        <p className="text-muted-foreground text-lg">
+          Все объявления агентства доступны для работы
+        </p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {stats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <Card key={stat.title} className="border-2 hover:shadow-lg transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {stat.title}
+                </CardTitle>
+                <Icon className={`h-5 w-5 ${stat.color}`} />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{stat.value}</div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Search */}
+      <div className="flex gap-4">
+        <Input
+          placeholder="Поиск по адресу или номеру объявления..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-md h-12"
+        />
+      </div>
+
+      {/* Properties Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredProperties.map((property) => (
+          <Card key={property.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 group">
+            <div className="aspect-video bg-muted relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
+              <div className="absolute top-4 right-4 z-20">
+                <Button size="icon" variant="secondary" className="rounded-full shadow-lg">
+                  <Star className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="absolute bottom-4 left-4 z-20">
+                <Badge className={getStatusColor(property.status)}>
+                  {getStatusText(property.status)}
+                </Badge>
+              </div>
+              <img
+                src="/placeholder.svg"
+                alt={property.address}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              />
+            </div>
+            <CardHeader>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-muted-foreground">
+                  № {property.property_number}
+                </span>
+                <Badge variant="outline" className="text-xs">
+                  {property.category}
+                </Badge>
+              </div>
+              <CardTitle className="text-xl line-clamp-1">{property.address}</CardTitle>
+              <CardDescription className="line-clamp-2">
+                {property.description || 'Описание отсутствует'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-baseline justify-between">
+                <div>
+                  <span className="text-3xl font-bold text-primary">
+                    ${property.price.toLocaleString()}
+                  </span>
+                  <span className="text-sm text-muted-foreground ml-2">
+                    {property.currency}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex gap-2 text-sm text-muted-foreground">
+                {property.total_area && (
+                  <span className="flex items-center gap-1">
+                    <Building2 className="h-4 w-4" />
+                    {property.total_area} м²
+                  </span>
+                )}
+                {property.rooms_count && (
+                  <span>• {property.rooms_count} комн.</span>
+                )}
+                {property.floor && (
+                  <span>• {property.floor} этаж</span>
+                )}
+              </div>
+
+              <Button className="w-full bg-gradient-primary hover:opacity-90 transition-opacity">
+                Назначить показ
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {filteredProperties.length === 0 && (
+        <Card className="p-12 text-center">
+          <Building2 className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+          <CardTitle className="text-2xl mb-2">Объявлений не найдено</CardTitle>
+          <CardDescription>
+            Попробуйте изменить параметры поиска
+          </CardDescription>
+        </Card>
+      )}
+    </div>
+  );
+}
