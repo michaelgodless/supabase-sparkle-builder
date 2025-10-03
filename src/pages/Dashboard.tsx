@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Property } from '@/types/database';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +21,7 @@ interface PropertyWithPhotos extends Property {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [properties, setProperties] = useState<PropertyWithPhotos[]>([]);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -241,7 +243,7 @@ export default function Dashboard() {
       {/* Properties Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredProperties.map((property) => (
-          <Card key={property.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 group">
+          <Card key={property.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer" onClick={() => navigate(`/properties/${property.id}`)}>
             <div className="aspect-video bg-muted relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
               <div className="absolute top-4 right-4 z-20">

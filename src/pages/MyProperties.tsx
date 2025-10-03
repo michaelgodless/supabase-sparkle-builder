@@ -156,7 +156,7 @@ export default function MyProperties() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProperties.map((property) => (
-            <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+            <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/properties/${property.id}`)}>
               {property.property_photos && property.property_photos.length > 0 && (
                 <div className="aspect-video bg-muted overflow-hidden">
                   <img
