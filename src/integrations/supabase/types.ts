@@ -362,7 +362,7 @@ export type Database = {
           price: number
           property_action_category_id: string | null
           property_area_id: string | null
-          property_area_old: string
+          property_area_old: string | null
           property_category_id: string | null
           property_condition_id: string | null
           property_floor_from_old: number | null
@@ -400,7 +400,7 @@ export type Database = {
           price: number
           property_action_category_id?: string | null
           property_area_id?: string | null
-          property_area_old: string
+          property_area_old?: string | null
           property_category_id?: string | null
           property_condition_id?: string | null
           property_floor_from_old?: number | null
@@ -438,7 +438,7 @@ export type Database = {
           price?: number
           property_action_category_id?: string | null
           property_area_id?: string | null
-          property_area_old?: string
+          property_area_old?: string | null
           property_category_id?: string | null
           property_condition_id?: string | null
           property_floor_from_old?: number | null
