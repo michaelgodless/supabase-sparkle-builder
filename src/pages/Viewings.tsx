@@ -22,7 +22,10 @@ interface ViewingWithDetails {
     address: string;
     price: number;
     currency: string;
-    category: string;
+    property_categories: {
+      name: string;
+      code: string;
+    } | null;
   };
   assigner: {
     full_name: string;
@@ -58,7 +61,10 @@ export default function Viewings() {
             address,
             price,
             currency,
-            category
+            property_categories (
+              name,
+              code
+            )
           ),
           assigner:profiles!viewings_assigned_by_fkey (
             full_name
@@ -179,7 +185,7 @@ export default function Viewings() {
                       #{viewing.property.property_number}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      {viewing.property.category}
+                      {viewing.property.property_categories?.name || 'Не указано'}
                     </p>
                   </div>
                   {getStatusBadge(viewing.status)}
