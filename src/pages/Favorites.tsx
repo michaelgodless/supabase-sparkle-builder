@@ -19,8 +19,7 @@ interface FavoriteWithProperty {
     address: string;
     price: number;
     currency: string;
-    category: string;
-    total_area?: number;
+    property_size?: number;
     status: string;
   };
 }
@@ -53,8 +52,7 @@ export default function Favorites() {
             address,
             price,
             currency,
-            category,
-            total_area,
+            property_size,
             status
           )
         `)
@@ -146,9 +144,6 @@ export default function Favorites() {
                     <h3 className="font-semibold text-lg">
                       #{favorite.property.property_number}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {favorite.property.category}
-                    </p>
                   </div>
                   {getPriorityBadge(favorite.priority)}
                 </div>
@@ -165,10 +160,10 @@ export default function Favorites() {
                       {favorite.property.price.toLocaleString()} {favorite.property.currency}
                     </span>
                   </div>
-                  {favorite.property.total_area && (
+                  {favorite.property.property_size && (
                     <div className="flex justify-between">
                       <span className="text-sm text-muted-foreground">Площадь:</span>
-                      <span className="font-medium">{favorite.property.total_area} м²</span>
+                      <span className="font-medium">{favorite.property.property_size} м²</span>
                     </div>
                   )}
                 </div>
