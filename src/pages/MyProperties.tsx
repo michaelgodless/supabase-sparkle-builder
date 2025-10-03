@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Eye, MapPin, Building2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Property } from '@/types/database';
+import { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -9,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+type PropertyStatus = Database['public']['Enums']['property_status'];
 
 interface PropertyWithPhotos extends Property {
   property_photos?: Array<{ photo_url: string; display_order: number }>;
@@ -83,6 +86,30 @@ export default function MyProperties() {
         variant: 'destructive',
         title: 'Ошибка',
         description: 'Не удалось удалить объявление',
+      });
+    }
+  };
+
+  const handleStatusChange = async (id: string, newStatus: PropertyStatus) => {
+    try {
+      const { error } = await supabase
+        .from('properties')
+        .update({ status: newStatus })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Успешно',
+        description: 'Статус обновлен',
+      });
+      fetchMyProperties();
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Не удалось обновить статус',
       });
     }
   };
@@ -167,7 +194,7 @@ export default function MyProperties() {
                 </div>
               )}
               <div className="p-6 space-y-4">
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start gap-2">
                   <div>
                     <h3 className="font-semibold text-lg">
                       #{property.property_number}
@@ -185,7 +212,23 @@ export default function MyProperties() {
                       )}
                     </div>
                   </div>
-                  {getStatusBadge(property.status)}
+                  <Select 
+                    value={property.status} 
+                    onValueChange={(value) => handleStatusChange(property.id, value as PropertyStatus)}
+                  >
+                    <SelectTrigger 
+                      className="w-[140px]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent onClick={(e) => e.stopPropagation()}>
+                      <SelectItem value="published">Опубликовано</SelectItem>
+                      <SelectItem value="no_ads">Без рекламы</SelectItem>
+                      <SelectItem value="sold">Продано</SelectItem>
+                      <SelectItem value="deleted">Удалено</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="flex items-start gap-2 text-sm text-muted-foreground">
