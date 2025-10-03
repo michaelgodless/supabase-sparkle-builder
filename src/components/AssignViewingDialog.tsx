@@ -59,6 +59,20 @@ export default function AssignViewingDialog({
       return;
     }
 
+    // Validate that the selected time is at least 1 hour in the future
+    const selectedDate = new Date(scheduledAt);
+    const minDate = new Date();
+    minDate.setHours(minDate.getHours() + 1);
+    
+    if (selectedDate <= minDate) {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Показ должен быть назначен минимум на 1 час вперед',
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
