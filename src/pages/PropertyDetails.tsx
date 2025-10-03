@@ -6,12 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building2, MapPin, Ruler, Home, Calendar, Phone, User, DollarSign, Star } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, Ruler, Home, Calendar, Phone, User, DollarSign, Star, Edit } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function PropertyDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [property, setProperty] = useState<any>(null);
   const [viewings, setViewings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -218,6 +220,15 @@ export default function PropertyDetails() {
           </div>
         </div>
         <div className="flex gap-2">
+          {user && property.created_by === user.id && (
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/properties/${id}/edit`)}
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Редактировать
+            </Button>
+          )}
           <Button
             variant="outline"
             size="icon"

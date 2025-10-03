@@ -35,6 +35,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/my-properties" element={<MyProperties />} />
               <Route path="/properties/new" element={<PropertyForm />} />
+              <Route path="/properties/:id/edit" element={<PropertyForm />} />
               <Route path="/properties/:id" element={<PropertyDetails />} />
               <Route path="/favorites" element={<Favorites />} />
               <Route path="/viewings" element={<Viewings />} />

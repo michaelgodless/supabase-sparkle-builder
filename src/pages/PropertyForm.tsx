@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,10 +28,13 @@ import {
 
 export default function PropertyForm() {
   const navigate = useNavigate();
+  const { id: propertyId } = useParams();
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
+  
+  const isEditMode = !!propertyId;
 
   // Справочники
   const [actionCategories, setActionCategories] = useState<PropertyActionCategory[]>([]);
@@ -75,6 +78,77 @@ export default function PropertyForm() {
   useEffect(() => {
     loadReferenceData();
   }, []);
+
+  // Загрузка данных объявления в режиме редактирования
+  useEffect(() => {
+    if (isEditMode && propertyId) {
+      loadPropertyData(propertyId);
+    }
+  }, [isEditMode, propertyId]);
+
+  const loadPropertyData = async (id: string) => {
+    try {
+      setLoadingData(true);
+      const { data, error } = await supabase
+        .from('properties')
+        .select(`
+          *,
+          property_payment_types(payment_type_id),
+          property_document_types(document_type_id),
+          property_communication_types(communication_type_id),
+          property_furniture_types(furniture_type_id),
+          property_photos(id, photo_url, display_order)
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setFormData({
+          property_action_category_id: data.property_action_category_id || '',
+          property_category_id: data.property_category_id || '',
+          property_rooms: data.property_rooms || '',
+          property_size: data.property_size?.toString() || '',
+          property_lot_size: data.property_lot_size?.toString() || '',
+          property_area_id: data.property_area_id || '',
+          property_proposal_id: data.property_proposal_id || '',
+          property_condition_id: data.property_condition_id || '',
+          property_floor_old: data.property_floor_old?.toString() || '',
+          property_floor_from_old: data.property_floor_from_old?.toString() || '',
+          address: data.address || '',
+          price: data.price?.toString() || '',
+          currency: data.currency || 'USD',
+          description: data.description || '',
+          owner_name: data.owner_name || '',
+          owner_contacts: data.owner_contacts || '',
+        });
+
+        if (data.property_payment_types) {
+          setSelectedPaymentTypes(data.property_payment_types.map((pt: any) => pt.payment_type_id));
+        }
+        if (data.property_document_types) {
+          setSelectedDocuments(data.property_document_types.map((dt: any) => dt.document_type_id));
+        }
+        if (data.property_communication_types) {
+          setSelectedCommunications(data.property_communication_types.map((ct: any) => ct.communication_type_id));
+        }
+        if (data.property_furniture_types) {
+          setSelectedFurniture(data.property_furniture_types.map((ft: any) => ft.furniture_type_id));
+        }
+      }
+    } catch (error) {
+      console.error('Error loading property:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Не удалось загрузить данные объявления',
+      });
+      navigate('/my-properties');
+    } finally {
+      setLoadingData(false);
+    }
+  };
 
   const loadReferenceData = async () => {
     try {
@@ -132,7 +206,8 @@ export default function PropertyForm() {
       return;
     }
 
-    if (selectedImages.length === 0) {
+    // Проверка фотографий только для новых объявлений
+    if (!isEditMode && selectedImages.length === 0) {
       toast({
         variant: 'destructive',
         title: 'Ошибка',
@@ -143,68 +218,92 @@ export default function PropertyForm() {
 
     setLoading(true);
     try {
-      // Создание объявления
-      const { data: property, error: propertyError } = await supabase
-        .from('properties')
-        .insert({
-          property_action_category_id: formData.property_action_category_id || null,
-          property_category_id: formData.property_category_id || null,
-          property_rooms: formData.property_rooms || null,
-          property_size: formData.property_size ? parseFloat(formData.property_size) : null,
-          property_lot_size: formData.property_lot_size ? parseFloat(formData.property_lot_size) : null,
-          property_area_id: formData.property_area_id || null,
-          property_proposal_id: formData.property_proposal_id || null,
-          property_condition_id: formData.property_condition_id || null,
-          property_floor_old: formData.property_floor_old ? parseInt(formData.property_floor_old) : null,
-          property_floor_from_old: formData.property_floor_from_old ? parseInt(formData.property_floor_from_old) : null,
-          address: formData.address,
-          price: parseFloat(formData.price),
-          currency: formData.currency,
-          description: formData.description || null,
-          owner_name: formData.owner_name,
-          owner_contacts: formData.owner_contacts,
-          created_by: user.id,
-          status: 'no_ads' as const,
-        } as any)
-        .select()
-        .single();
+      const propertyData = {
+        property_action_category_id: formData.property_action_category_id || null,
+        property_category_id: formData.property_category_id || null,
+        property_rooms: formData.property_rooms || null,
+        property_size: formData.property_size ? parseFloat(formData.property_size) : null,
+        property_lot_size: formData.property_lot_size ? parseFloat(formData.property_lot_size) : null,
+        property_area_id: formData.property_area_id || null,
+        property_proposal_id: formData.property_proposal_id || null,
+        property_condition_id: formData.property_condition_id || null,
+        property_floor_old: formData.property_floor_old ? parseInt(formData.property_floor_old) : null,
+        property_floor_from_old: formData.property_floor_from_old ? parseInt(formData.property_floor_from_old) : null,
+        address: formData.address,
+        price: parseFloat(formData.price),
+        currency: formData.currency,
+        description: formData.description || null,
+        owner_name: formData.owner_name,
+        owner_contacts: formData.owner_contacts,
+      };
 
-      if (propertyError) throw propertyError;
-      if (!property) throw new Error('Property not created');
+      let propertyIdToUse: string;
+
+      if (isEditMode && propertyId) {
+        // Обновление существующего объявления
+        const { error: updateError } = await supabase
+          .from('properties')
+          .update(propertyData)
+          .eq('id', propertyId);
+
+        if (updateError) throw updateError;
+        propertyIdToUse = propertyId;
+
+        // Удаление старых связей
+        await Promise.all([
+          supabase.from('property_payment_types').delete().eq('property_id', propertyId),
+          supabase.from('property_document_types').delete().eq('property_id', propertyId),
+          supabase.from('property_communication_types').delete().eq('property_id', propertyId),
+          supabase.from('property_furniture_types').delete().eq('property_id', propertyId),
+        ]);
+      } else {
+        // Создание нового объявления
+        const { data: property, error: propertyError } = await supabase
+          .from('properties')
+          .insert({
+            ...propertyData,
+            created_by: user.id,
+            status: 'no_ads' as const,
+          } as any)
+          .select()
+          .single();
+
+        if (propertyError) throw propertyError;
+        if (!property) throw new Error('Property not created');
+        propertyIdToUse = property.id;
+      }
 
       // Добавление связей для множественных выборов
-      const propertyId = property.id;
-
       if (selectedPaymentTypes.length > 0) {
         await supabase.from('property_payment_types').insert(
-          selectedPaymentTypes.map(id => ({ property_id: propertyId, payment_type_id: id }))
+          selectedPaymentTypes.map(id => ({ property_id: propertyIdToUse, payment_type_id: id }))
         );
       }
 
       if (selectedDocuments.length > 0) {
         await supabase.from('property_document_types').insert(
-          selectedDocuments.map(id => ({ property_id: propertyId, document_type_id: id }))
+          selectedDocuments.map(id => ({ property_id: propertyIdToUse, document_type_id: id }))
         );
       }
 
       if (selectedCommunications.length > 0) {
         await supabase.from('property_communication_types').insert(
-          selectedCommunications.map(id => ({ property_id: propertyId, communication_type_id: id }))
+          selectedCommunications.map(id => ({ property_id: propertyIdToUse, communication_type_id: id }))
         );
       }
 
       if (selectedFurniture.length > 0) {
         await supabase.from('property_furniture_types').insert(
-          selectedFurniture.map(id => ({ property_id: propertyId, furniture_type_id: id }))
+          selectedFurniture.map(id => ({ property_id: propertyIdToUse, furniture_type_id: id }))
         );
       }
 
-      // Загрузка изображений
+      // Загрузка новых изображений
       if (selectedImages.length > 0) {
         for (let i = 0; i < selectedImages.length; i++) {
           const file = selectedImages[i];
           const fileExt = file.name.split('.').pop();
-          const fileName = `${user.id}/${propertyId}/${Date.now()}_${i}.${fileExt}`;
+          const fileName = `${user.id}/${propertyIdToUse}/${Date.now()}_${i}.${fileExt}`;
           
           const { error: uploadError } = await supabase.storage
             .from('property-photos')
@@ -220,7 +319,7 @@ export default function PropertyForm() {
             .getPublicUrl(fileName);
 
           await supabase.from('property_photos').insert({
-            property_id: propertyId,
+            property_id: propertyIdToUse,
             photo_url: publicUrl,
             display_order: i,
           });
@@ -229,12 +328,12 @@ export default function PropertyForm() {
 
       toast({
         title: 'Успешно',
-        description: 'Объявление создано',
+        description: isEditMode ? 'Объявление обновлено' : 'Объявление создано',
       });
 
-      navigate('/my-properties');
+      navigate(isEditMode ? `/properties/${propertyId}` : '/my-properties');
     } catch (error: any) {
-      console.error('Create property error:', error);
+      console.error('Property operation error:', error);
       toast({
         variant: 'destructive',
         title: 'Ошибка',
@@ -296,10 +395,10 @@ export default function PropertyForm() {
         </Button>
         <div>
           <h1 className="text-4xl font-bold text-foreground mb-2">
-            Создать объявление
+            {isEditMode ? 'Редактировать объявление' : 'Создать объявление'}
           </h1>
           <p className="text-muted-foreground text-lg">
-            Добавление нового объекта недвижимости
+            {isEditMode ? 'Изменение объекта недвижимости' : 'Добавление нового объекта недвижимости'}
           </p>
         </div>
       </div>
