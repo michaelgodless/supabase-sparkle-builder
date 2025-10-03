@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface PropertyWithPhotos extends Property {
   property_photos?: Array<{ photo_url: string; display_order: number }>;
@@ -14,13 +15,18 @@ interface PropertyWithPhotos extends Property {
 
 export default function Dashboard() {
   const [properties, setProperties] = useState<PropertyWithPhotos[]>([]);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchProperties();
-  }, []);
+    if (user) {
+      fetchFavorites();
+    }
+  }, [user]);
 
   const fetchProperties = async () => {
     try {
@@ -40,6 +46,80 @@ export default function Dashboard() {
       console.error('Error fetching properties:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchFavorites = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('property_id')
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+      setFavorites(new Set(data?.map(f => f.property_id) || []));
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+    }
+  };
+
+  const toggleFavorite = async (propertyId: string) => {
+    if (!user) {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Войдите в систему для добавления в избранное',
+      });
+      return;
+    }
+
+    try {
+      const isFavorite = favorites.has(propertyId);
+
+      if (isFavorite) {
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('property_id', propertyId)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+
+        setFavorites(prev => {
+          const next = new Set(prev);
+          next.delete(propertyId);
+          return next;
+        });
+
+        toast({
+          title: 'Удалено',
+          description: 'Объект удален из избранного',
+        });
+      } else {
+        const { error } = await supabase
+          .from('favorites')
+          .insert({
+            property_id: propertyId,
+            user_id: user.id,
+            priority: 'medium'
+          });
+
+        if (error) throw error;
+
+        setFavorites(prev => new Set([...prev, propertyId]));
+
+        toast({
+          title: 'Добавлено',
+          description: 'Объект добавлен в избранное',
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Не удалось обновить избранное',
+      });
     }
   };
 
@@ -152,8 +232,18 @@ export default function Dashboard() {
             <div className="aspect-video bg-muted relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
               <div className="absolute top-4 right-4 z-20">
-                <Button size="icon" variant="secondary" className="rounded-full shadow-lg">
-                  <Star className="h-4 w-4" />
+                <Button 
+                  size="icon" 
+                  variant="secondary" 
+                  className="rounded-full shadow-lg"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFavorite(property.id);
+                  }}
+                >
+                  <Star 
+                    className={`h-4 w-4 ${favorites.has(property.id) ? 'fill-yellow-400 text-yellow-400' : ''}`}
+                  />
                 </Button>
               </div>
               <div className="absolute bottom-4 left-4 z-20">
