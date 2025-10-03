@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,8 +25,18 @@ export default function AssignViewingDialog({
   const [scheduledAt, setScheduledAt] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
+  const [minDateTime, setMinDateTime] = useState('');
   const { toast } = useToast();
   const { user } = useAuth();
+
+  // Set minimum datetime to 1 hour from now
+  useEffect(() => {
+    const now = new Date();
+    now.setHours(now.getHours() + 1);
+    // Format to YYYY-MM-DDTHH:MM for datetime-local input
+    const formatted = now.toISOString().slice(0, 16);
+    setMinDateTime(formatted);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,12 +62,16 @@ export default function AssignViewingDialog({
     setLoading(true);
 
     try {
+      // Convert local datetime to ISO string with timezone
+      const scheduledDate = new Date(scheduledAt);
+      const scheduledISOString = scheduledDate.toISOString();
+
       const { error } = await supabase
         .from('viewings')
         .insert({
           property_id: propertyId,
           assigned_by: user.id,
-          scheduled_at: scheduledAt,
+          scheduled_at: scheduledISOString,
           notes: notes || null,
           status: 'scheduled'
         });
@@ -105,8 +119,12 @@ export default function AssignViewingDialog({
               type="datetime-local"
               value={scheduledAt}
               onChange={(e) => setScheduledAt(e.target.value)}
+              min={minDateTime}
               required
             />
+            <p className="text-xs text-muted-foreground">
+              Показ должен быть назначен минимум на 1 час вперед
+            </p>
           </div>
 
           <div className="space-y-2">
