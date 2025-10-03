@@ -120,7 +120,7 @@ export default function PropertyForm() {
 
     setLoading(true);
     try {
-      // Создание объявления
+      // Создание объявления (використовуємо type assertion до оновлення типів Supabase)
       const { data: property, error: propertyError } = await supabase
         .from('properties')
         .insert({
@@ -142,7 +142,7 @@ export default function PropertyForm() {
           owner_contacts: formData.owner_contacts,
           created_by: user.id,
           status: 'no_ads' as const,
-        })
+        } as any)
         .select()
         .single();
 
