@@ -8,8 +8,14 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import MyProperties from "@/pages/MyProperties";
+import PropertyForm from "@/pages/PropertyForm";
 import Favorites from "@/pages/Favorites";
 import Viewings from "@/pages/Viewings";
+import NewBuildings from "@/pages/NewBuildings";
+import Docs from "@/pages/Docs";
+import Admin from "@/pages/Admin";
+import Audit from "@/pages/Audit";
+import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,8 +33,14 @@ const App = () => (
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/my-properties" element={<MyProperties />} />
+              <Route path="/properties/new" element={<PropertyForm />} />
               <Route path="/favorites" element={<Favorites />} />
               <Route path="/viewings" element={<Viewings />} />
+              <Route path="/new-buildings" element={<NewBuildings />} />
+              <Route path="/docs" element={<Docs />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/audit" element={<Audit />} />
+              <Route path="/profile" element={<Profile />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
