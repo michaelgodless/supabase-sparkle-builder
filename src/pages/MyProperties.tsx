@@ -9,8 +9,12 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
+interface PropertyWithPhotos extends Property {
+  property_photos?: Array<{ photo_url: string; display_order: number }>;
+}
+
 export default function MyProperties() {
-  const [properties, setProperties] = useState<Property[]>([]);
+  const [properties, setProperties] = useState<PropertyWithPhotos[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -26,7 +30,10 @@ export default function MyProperties() {
     try {
       const { data, error } = await supabase
         .from('properties')
-        .select('*')
+        .select(`
+          *,
+          property_photos(photo_url, display_order)
+        `)
         .eq('created_by', user?.id)
         .order('created_at', { ascending: false });
 
@@ -118,6 +125,15 @@ export default function MyProperties() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {properties.map((property) => (
             <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              {property.property_photos && property.property_photos.length > 0 && (
+                <div className="aspect-video bg-muted overflow-hidden">
+                  <img
+                    src={property.property_photos.sort((a, b) => a.display_order - b.display_order)[0].photo_url}
+                    alt={property.address}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
               <div className="p-6 space-y-4">
                 <div className="flex justify-between items-start">
                   <div>

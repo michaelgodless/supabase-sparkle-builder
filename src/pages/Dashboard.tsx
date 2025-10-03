@@ -8,8 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 
+interface PropertyWithPhotos extends Property {
+  property_photos?: Array<{ photo_url: string; display_order: number }>;
+}
+
 export default function Dashboard() {
-  const [properties, setProperties] = useState<Property[]>([]);
+  const [properties, setProperties] = useState<PropertyWithPhotos[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const { profile } = useAuth();
@@ -22,7 +26,10 @@ export default function Dashboard() {
     try {
       const { data, error } = await supabase
         .from('properties')
-        .select('*')
+        .select(`
+          *,
+          property_photos(photo_url, display_order)
+        `)
         .in('status', ['published', 'no_ads'])
         .order('created_at', { ascending: false })
         .limit(20);
@@ -154,11 +161,19 @@ export default function Dashboard() {
                   {getStatusText(property.status)}
                 </Badge>
               </div>
-              <img
-                src="/placeholder.svg"
-                alt={property.address}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-              />
+              {property.property_photos && property.property_photos.length > 0 ? (
+                <img
+                  src={property.property_photos.sort((a, b) => a.display_order - b.display_order)[0].photo_url}
+                  alt={property.address}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                />
+              ) : (
+                <img
+                  src="/placeholder.svg"
+                  alt={property.address}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                />
+              )}
             </div>
             <CardHeader>
               <div className="flex items-center justify-between mb-2">
