@@ -10,7 +10,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Upload } from 'lucide-react';
+import PhotoPreview from '@/components/PhotoPreview';
 import { 
   PropertyActionCategory, 
   PropertyCategory, 
@@ -119,6 +120,27 @@ export default function PropertyForm() {
     e.preventDefault();
     if (!user) return;
 
+    // Клиентская валидация
+    if (!formData.property_action_category_id || !formData.property_category_id || 
+        !formData.property_proposal_id || !formData.property_size || 
+        !formData.address || !formData.price || !formData.owner_name || !formData.owner_contacts) {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Заполните все обязательные поля',
+      });
+      return;
+    }
+
+    if (selectedImages.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Добавьте хотя бы одну фотографию',
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       // Создание объявления
@@ -221,6 +243,30 @@ export default function PropertyForm() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleImageSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length + selectedImages.length > 20) {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Максимум 20 фотографий',
+      });
+      return;
+    }
+    setSelectedImages([...selectedImages, ...files]);
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setSelectedImages(selectedImages.filter((_, i) => i !== index));
+  };
+
+  const handleReorderImages = (fromIndex: number, toIndex: number) => {
+    const newImages = [...selectedImages];
+    const [movedImage] = newImages.splice(fromIndex, 1);
+    newImages.splice(toIndex, 0, movedImage);
+    setSelectedImages(newImages);
   };
 
   // Условная логика: показывать поле площади участка только для домов и участков
@@ -601,23 +647,42 @@ export default function PropertyForm() {
             </div>
 
             {/* Группа 8: Фотографии */}
-            <div className="space-y-2">
-              <Label htmlFor="images">Фотографии объекта</Label>
-              <Input
-                id="images"
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp"
-                multiple
-                onChange={(e) => {
-                  const files = Array.from(e.target.files || []);
-                  setSelectedImages(files);
-                }}
-              />
-              {selectedImages.length > 0 && (
-                <p className="text-sm text-muted-foreground">
-                  Выбрано изображений: {selectedImages.length}
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="images">Фотографии объекта *</Label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Первая фотография будет главной. Максимум 20 фотографий.
                 </p>
-              )}
+              </div>
+              <div className="flex items-center gap-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => document.getElementById('images')?.click()}
+                  disabled={selectedImages.length >= 20}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Выбрать фотографии
+                </Button>
+                <Input
+                  id="images"
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  multiple
+                  className="hidden"
+                  onChange={handleImageSelection}
+                />
+                {selectedImages.length > 0 && (
+                  <span className="text-sm text-muted-foreground">
+                    Загружено: {selectedImages.length}/20
+                  </span>
+                )}
+              </div>
+              <PhotoPreview 
+                files={selectedImages}
+                onRemove={handleRemoveImage}
+                onReorder={handleReorderImages}
+              />
             </div>
 
             {/* Группа 9: Контакты собственника */}

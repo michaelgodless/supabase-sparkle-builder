@@ -8,14 +8,20 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface PropertyWithPhotos extends Property {
   property_photos?: Array<{ photo_url: string; display_order: number }>;
+  property_categories?: { name: string; code: string };
+  property_action_categories?: { name: string; code: string };
+  property_areas?: { name: string; full_name: string | null };
+  property_conditions?: { name: string; code: string };
 }
 
 export default function MyProperties() {
   const [properties, setProperties] = useState<PropertyWithPhotos[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -32,7 +38,11 @@ export default function MyProperties() {
         .from('properties')
         .select(`
           *,
-          property_photos(photo_url, display_order)
+          property_photos(photo_url, display_order),
+          property_categories(name, code),
+          property_action_categories(name, code),
+          property_areas(name, full_name),
+          property_conditions(name, code)
         `)
         .eq('created_by', user?.id)
         .order('created_at', { ascending: false });
@@ -95,6 +105,10 @@ export default function MyProperties() {
     );
   }
 
+  const filteredProperties = statusFilter === 'all' 
+    ? properties 
+    : properties.filter(p => p.status === statusFilter);
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -110,7 +124,25 @@ export default function MyProperties() {
         </Button>
       </div>
 
-      {properties.length === 0 ? (
+      <div className="flex gap-4 items-center">
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Фильтр по статусу" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Все</SelectItem>
+            <SelectItem value="published">Опубликовано</SelectItem>
+            <SelectItem value="no_ads">Без рекламы</SelectItem>
+            <SelectItem value="sold">Продано</SelectItem>
+            <SelectItem value="deleted">Удалено</SelectItem>
+          </SelectContent>
+        </Select>
+        <span className="text-sm text-muted-foreground">
+          Найдено: {filteredProperties.length}
+        </span>
+      </div>
+
+      {filteredProperties.length === 0 ? (
         <Card className="p-12 text-center">
           <Building2 className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-xl font-semibold mb-2">Нет объявлений</h3>
@@ -123,7 +155,7 @@ export default function MyProperties() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {properties.map((property) => (
+          {filteredProperties.map((property) => (
             <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               {property.property_photos && property.property_photos.length > 0 && (
                 <div className="aspect-video bg-muted overflow-hidden">
@@ -140,9 +172,18 @@ export default function MyProperties() {
                     <h3 className="font-semibold text-lg">
                       #{property.property_number}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {property.category}
-                    </p>
+                    <div className="flex gap-2 mt-1">
+                      {(property as any).property_action_categories && (
+                        <p className="text-xs text-muted-foreground">
+                          {(property as any).property_action_categories.name}
+                        </p>
+                      )}
+                      {(property as any).property_categories && (
+                        <p className="text-xs text-muted-foreground">
+                          • {(property as any).property_categories.name}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   {getStatusBadge(property.status)}
                 </div>
@@ -159,10 +200,22 @@ export default function MyProperties() {
                       {property.price.toLocaleString()} {property.currency}
                     </span>
                   </div>
-                  {property.total_area && (
+                  {property.property_size && (
                     <div className="flex justify-between">
                       <span className="text-sm text-muted-foreground">Площадь:</span>
-                      <span className="font-medium">{property.total_area} м²</span>
+                      <span className="font-medium">{property.property_size} м²</span>
+                    </div>
+                  )}
+                  {(property as any).property_areas && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Район:</span>
+                      <span className="font-medium">{(property as any).property_areas.name}</span>
+                    </div>
+                  )}
+                  {(property as any).property_conditions && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Состояние:</span>
+                      <span className="font-medium">{(property as any).property_conditions.name}</span>
                     </div>
                   )}
                 </div>

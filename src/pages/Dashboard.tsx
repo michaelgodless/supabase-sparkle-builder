@@ -12,6 +12,11 @@ import AssignViewingDialog from '@/components/AssignViewingDialog';
 
 interface PropertyWithPhotos extends Property {
   property_photos?: Array<{ photo_url: string; display_order: number }>;
+  property_categories?: { name: string; code: string };
+  property_action_categories?: { name: string; code: string };
+  property_areas?: { name: string; full_name: string | null };
+  property_proposals?: { name: string; code: string };
+  property_conditions?: { name: string; code: string };
 }
 
 export default function Dashboard() {
@@ -37,7 +42,12 @@ export default function Dashboard() {
         .from('properties')
         .select(`
           *,
-          property_photos(photo_url, display_order)
+          property_photos(photo_url, display_order),
+          property_categories(name, code),
+          property_action_categories(name, code),
+          property_areas(name, full_name),
+          property_proposals(name, code),
+          property_conditions(name, code)
         `)
         .in('status', ['published', 'no_ads'])
         .order('created_at', { ascending: false })
@@ -273,9 +283,18 @@ export default function Dashboard() {
                 <span className="text-sm font-medium text-muted-foreground">
                   № {property.property_number}
                 </span>
-                <Badge variant="outline" className="text-xs">
-                  {property.category}
-                </Badge>
+                <div className="flex gap-2">
+                  {(property as any).property_action_categories && (
+                    <Badge variant="outline" className="text-xs">
+                      {(property as any).property_action_categories.name}
+                    </Badge>
+                  )}
+                  {(property as any).property_categories && (
+                    <Badge variant="secondary" className="text-xs">
+                      {(property as any).property_categories.name}
+                    </Badge>
+                  )}
+                </div>
               </div>
               <CardTitle className="text-xl line-clamp-1">{property.address}</CardTitle>
               <CardDescription className="line-clamp-2">
@@ -294,18 +313,21 @@ export default function Dashboard() {
                 </div>
               </div>
               
-              <div className="flex gap-2 text-sm text-muted-foreground">
-                {property.total_area && (
+              <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                {property.property_size && (
                   <span className="flex items-center gap-1">
                     <Building2 className="h-4 w-4" />
-                    {property.total_area} м²
+                    {property.property_size} м²
                   </span>
                 )}
-                {property.rooms_count && (
-                  <span>• {property.rooms_count} комн.</span>
+                {property.property_rooms && (
+                  <span>• {property.property_rooms} комн.</span>
                 )}
-                {property.floor && (
-                  <span>• {property.floor} этаж</span>
+                {(property as any).property_floor_old && (
+                  <span>• {(property as any).property_floor_old}{(property as any).property_floor_from_old ? `/${(property as any).property_floor_from_old}` : ''} эт.</span>
+                )}
+                {(property as any).property_areas && (
+                  <span>• {(property as any).property_areas.name}</span>
                 )}
               </div>
 
