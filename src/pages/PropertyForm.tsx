@@ -54,8 +54,8 @@ export default function PropertyForm() {
     property_area_id: '',
     property_proposal_id: '',
     property_condition_id: '',
-    floor: '',
-    total_floors: '',
+    property_floor_old: '',
+    property_floor_from_old: '',
     address: '',
     price: '',
     currency: 'USD',
@@ -68,6 +68,7 @@ export default function PropertyForm() {
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
   const [selectedCommunications, setSelectedCommunications] = useState<string[]>([]);
   const [selectedFurniture, setSelectedFurniture] = useState<string[]>([]);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
 
   // Загрузка справочников
   useEffect(() => {
@@ -120,7 +121,7 @@ export default function PropertyForm() {
 
     setLoading(true);
     try {
-      // Создание объявления (використовуємо type assertion до оновлення типів Supabase)
+      // Создание объявления
       const { data: property, error: propertyError } = await supabase
         .from('properties')
         .insert({
@@ -132,8 +133,8 @@ export default function PropertyForm() {
           property_area_id: formData.property_area_id || null,
           property_proposal_id: formData.property_proposal_id || null,
           property_condition_id: formData.property_condition_id || null,
-          floor: formData.floor ? parseInt(formData.floor) : null,
-          total_floors: formData.total_floors ? parseInt(formData.total_floors) : null,
+          property_floor_old: formData.property_floor_old ? parseInt(formData.property_floor_old) : null,
+          property_floor_from_old: formData.property_floor_from_old ? parseInt(formData.property_floor_from_old) : null,
           address: formData.address,
           price: parseFloat(formData.price),
           currency: formData.currency,
@@ -174,6 +175,34 @@ export default function PropertyForm() {
         await supabase.from('property_furniture_types').insert(
           selectedFurniture.map(id => ({ property_id: propertyId, furniture_type_id: id }))
         );
+      }
+
+      // Загрузка изображений
+      if (selectedImages.length > 0) {
+        for (let i = 0; i < selectedImages.length; i++) {
+          const file = selectedImages[i];
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${user.id}/${propertyId}/${Date.now()}_${i}.${fileExt}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('property-photos')
+            .upload(fileName, file);
+
+          if (uploadError) {
+            console.error('Image upload error:', uploadError);
+            continue;
+          }
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('property-photos')
+            .getPublicUrl(fileName);
+
+          await supabase.from('property_photos').insert({
+            property_id: propertyId,
+            photo_url: publicUrl,
+            display_order: i,
+          });
+        }
       }
 
       toast({
@@ -338,10 +367,10 @@ export default function PropertyForm() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="floor">Этаж</Label>
+                <Label htmlFor="property_floor_old">Этаж</Label>
                 <Select 
-                  value={formData.floor} 
-                  onValueChange={(value) => setFormData({ ...formData, floor: value })}
+                  value={formData.property_floor_old} 
+                  onValueChange={(value) => setFormData({ ...formData, property_floor_old: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Выберите этаж" />
@@ -355,10 +384,10 @@ export default function PropertyForm() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="total_floors">Этажность</Label>
+                <Label htmlFor="property_floor_from_old">Этажность</Label>
                 <Select 
-                  value={formData.total_floors} 
-                  onValueChange={(value) => setFormData({ ...formData, total_floors: value })}
+                  value={formData.property_floor_from_old} 
+                  onValueChange={(value) => setFormData({ ...formData, property_floor_from_old: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Выберите" />
@@ -571,7 +600,27 @@ export default function PropertyForm() {
               />
             </div>
 
-            {/* Группа 8: Контакты собственника */}
+            {/* Группа 8: Фотографии */}
+            <div className="space-y-2">
+              <Label htmlFor="images">Фотографии объекта</Label>
+              <Input
+                id="images"
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                multiple
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  setSelectedImages(files);
+                }}
+              />
+              {selectedImages.length > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  Выбрано изображений: {selectedImages.length}
+                </p>
+              )}
+            </div>
+
+            {/* Группа 9: Контакты собственника */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="owner_name">ФИО собственника *</Label>
