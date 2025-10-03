@@ -14,6 +14,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   isAdmin: boolean;
   isManager: boolean;
+  isIntern: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        fetchProfileAndRoles(session.user.id);
       } else {
         setLoading(false);
       }
@@ -43,9 +44,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        fetchProfileAndRoles(session.user.id);
       } else {
         setProfile(null);
+        setUserRoles([]);
         setLoading(false);
       }
     });
@@ -53,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfileAndRoles = async (userId: string) => {
     try {
       // Fetch profile
       const { data: profileData, error: profileError } = await supabase
@@ -65,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (profileError) throw profileError;
       setProfile(profileData);
 
-      // Fetch user roles
+      // Fetch user roles from the secure user_roles table
       const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .select('role')
@@ -74,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (rolesError) throw rolesError;
       setUserRoles(rolesData?.map(r => r.role) || []);
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Error fetching profile and roles:', error);
     } finally {
       setLoading(false);
     }
@@ -124,6 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isAdmin = userRoles.includes('super_admin');
   const isManager = userRoles.includes('manager') || userRoles.includes('super_admin');
+  const isIntern = userRoles.includes('intern');
 
   return (
     <AuthContext.Provider
@@ -136,6 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signOut,
         isAdmin,
         isManager,
+        isIntern,
       }}
     >
       {children}
