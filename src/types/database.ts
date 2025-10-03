@@ -29,14 +29,31 @@ export interface Property {
   created_by: string;
   owner_name: string;
   owner_contacts: string;
-  deal_type: DealType;
-  category: PropertyCategory;
+  
+  // Новая структура с использованием справочников
+  property_action_category_id?: string;
+  property_category_id?: string;
+  property_subcategory_id?: string;
+  property_rooms?: string;
+  property_size?: number;
+  property_lot_size?: number;
+  property_area_id?: string;
+  property_proposal_id?: string;
+  property_condition_id?: string;
+  property_status_id?: string;
+  is_demo?: boolean;
+  
+  // Старые поля для обратной совместимости
+  deal_type?: DealType;
+  category?: PropertyCategory;
   rooms_count?: number;
   total_area?: number;
   land_area?: number;
+  area?: string;
+  
+  // Общие поля
   floor?: number;
   total_floors?: number;
-  area: string;
   address: string;
   latitude?: number;
   longitude?: number;
