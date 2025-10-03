@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import AssignViewingDialog from '@/components/AssignViewingDialog';
 
 interface PropertyWithPhotos extends Property {
   property_photos?: Array<{ photo_url: string; display_order: number }>;
@@ -18,6 +19,8 @@ export default function Dashboard() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewingDialogOpen, setViewingDialogOpen] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<{ id: string; number: number } | null>(null);
   const { user, profile } = useAuth();
   const { toast } = useToast();
 
@@ -306,7 +309,13 @@ export default function Dashboard() {
                 )}
               </div>
 
-              <Button className="w-full bg-gradient-primary hover:opacity-90 transition-opacity">
+              <Button 
+                className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
+                onClick={() => {
+                  setSelectedProperty({ id: property.id, number: property.property_number });
+                  setViewingDialogOpen(true);
+                }}
+              >
                 Назначить показ
               </Button>
             </CardContent>
@@ -322,6 +331,15 @@ export default function Dashboard() {
             Попробуйте изменить параметры поиска
           </CardDescription>
         </Card>
+      )}
+
+      {selectedProperty && (
+        <AssignViewingDialog
+          open={viewingDialogOpen}
+          onOpenChange={setViewingDialogOpen}
+          propertyId={selectedProperty.id}
+          propertyNumber={selectedProperty.number}
+        />
       )}
     </div>
   );
