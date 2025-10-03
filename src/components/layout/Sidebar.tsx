@@ -64,10 +64,10 @@ const navItems: NavItem[] = [
 
 export function Sidebar() {
   const location = useLocation();
-  const { profile, signOut } = useAuth();
+  const { profile, userRoles, signOut } = useAuth();
 
   const filteredNavItems = navItems.filter((item) =>
-    profile ? item.roles.includes(profile.role) : false
+    userRoles.length > 0 ? item.roles.some(role => userRoles.includes(role)) : false
   );
 
   return (
@@ -130,9 +130,11 @@ export function Sidebar() {
           <div className="mt-4 px-4 py-2 rounded-lg bg-sidebar-accent/50">
             <p className="text-sm font-medium text-sidebar-foreground">{profile.full_name}</p>
             <p className="text-xs text-sidebar-foreground/70">{profile.email}</p>
-            <span className="inline-block mt-2 px-2 py-1 text-xs font-medium rounded bg-sidebar-primary text-sidebar-primary-foreground">
-              {profile.role === 'super_admin' ? 'Супер-админ' : profile.role === 'manager' ? 'Менеджер' : 'Стажер'}
-            </span>
+            {userRoles.length > 0 && (
+              <span className="inline-block mt-2 px-2 py-1 text-xs font-medium rounded bg-sidebar-primary text-sidebar-primary-foreground">
+                {userRoles.includes('super_admin') ? 'Супер-админ' : userRoles.includes('manager') ? 'Менеджер' : 'Стажер'}
+              </span>
+            )}
           </div>
         )}
       </div>

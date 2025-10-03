@@ -1,4 +1,4 @@
-export type UserRole = 'super_admin' | 'manager' | 'intern' | 'blocked';
+export type AppRole = 'super_admin' | 'manager' | 'intern' | 'blocked';
 export type PropertyStatus = 'published' | 'no_ads' | 'deleted' | 'sold';
 export type DealType = 'sale' | 'rent' | 'exchange';
 export type PropertyCategory = 'apartment' | 'house' | 'commercial' | 'land' | 'garage';
@@ -9,12 +9,18 @@ export interface Profile {
   id: string;
   email: string;
   full_name: string;
-  role: UserRole;
   phone?: string;
   avatar_url?: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface UserRole {
+  id: string;
+  user_id: string;
+  role: 'super_admin' | 'manager' | 'intern' | 'blocked';
+  created_at: string;
 }
 
 export interface Property {

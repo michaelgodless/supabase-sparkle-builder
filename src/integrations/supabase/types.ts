@@ -232,7 +232,6 @@ export type Database = {
           id: string
           is_active: boolean | null
           phone: string | null
-          role: Database["public"]["Enums"]["user_role"]
           updated_at: string
         }
         Insert: {
@@ -243,7 +242,6 @@ export type Database = {
           id: string
           is_active?: boolean | null
           phone?: string | null
-          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
         Update: {
@@ -254,7 +252,6 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           phone?: string | null
-          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
         Relationships: []
@@ -389,6 +386,27 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       viewings: {
         Row: {
           assigned_by: string
@@ -442,7 +460,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_any_role: {
+        Args: {
+          _roles: Database["public"]["Enums"]["app_role"][]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       action_type:
@@ -454,6 +485,7 @@ export type Database = {
         | "view_contacts"
         | "assign_show"
         | "change_status"
+      app_role: "super_admin" | "manager" | "intern" | "blocked"
       deal_status: "pending" | "confirmed" | "rejected" | "completed"
       deal_type: "sale" | "rent" | "exchange"
       property_category:
@@ -602,6 +634,7 @@ export const Constants = {
         "assign_show",
         "change_status",
       ],
+      app_role: ["super_admin", "manager", "intern", "blocked"],
       deal_status: ["pending", "confirmed", "rejected", "completed"],
       deal_type: ["sale", "rent", "exchange"],
       property_category: ["apartment", "house", "commercial", "land", "garage"],
