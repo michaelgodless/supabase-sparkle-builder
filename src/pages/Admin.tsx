@@ -67,23 +67,30 @@ export default function Admin() {
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          id,
-          email,
-          full_name,
-          phone,
-          is_active,
-          created_at,
-          user_roles (
-            role
-          )
-        `)
+        .select('id, email, full_name, phone, is_active, created_at')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setUsers(data as any || []);
+      if (profilesError) throw profilesError;
+
+      // Fetch all user roles
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      if (rolesError) throw rolesError;
+
+      // Combine profiles with their roles
+      const usersWithRoles = (profiles || []).map(profile => ({
+        ...profile,
+        roles: (roles || [])
+          .filter(role => role.user_id === profile.id)
+          .map(role => ({ role: role.role }))
+      }));
+
+      setUsers(usersWithRoles as any);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
