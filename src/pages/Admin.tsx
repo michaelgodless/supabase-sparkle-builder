@@ -5,8 +5,9 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Search, UserCheck, UserX, Shield } from 'lucide-react';
+import { Search, UserCheck, UserX, Shield, UserPlus } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -48,6 +49,15 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [creatingUser, setCreatingUser] = useState(false);
+  const [newUserData, setNewUserData] = useState({
+    email: '',
+    password: '',
+    full_name: '',
+    phone: '',
+    role: 'manager' as AppRole
+  });
   const { toast } = useToast();
   const { isAdmin } = useAuth();
 
@@ -158,6 +168,63 @@ export default function Admin() {
     }
   };
 
+  const createUser = async () => {
+    if (!newUserData.email || !newUserData.password || !newUserData.full_name) {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Заполните все обязательные поля',
+      });
+      return;
+    }
+
+    setCreatingUser(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const response = await fetch(
+        `https://zikqbffckorauiasbbrg.supabase.co/functions/v1/create-user`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`
+          },
+          body: JSON.stringify(newUserData)
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Не удалось создать пользователя');
+      }
+
+      toast({
+        title: 'Успешно',
+        description: 'Пользователь создан',
+      });
+
+      setCreateDialogOpen(false);
+      setNewUserData({
+        email: '',
+        password: '',
+        full_name: '',
+        phone: '',
+        role: 'manager'
+      });
+      fetchUsers();
+    } catch (error) {
+      console.error('Error creating user:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: error instanceof Error ? error.message : 'Не удалось создать пользователя',
+      });
+    } finally {
+      setCreatingUser(false);
+    }
+  };
+
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -220,11 +287,93 @@ export default function Admin() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Управление пользователями</h1>
-        <p className="text-muted-foreground mt-2">
-          Администрирование пользователей и ролей
-        </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Управление пользователями</h1>
+          <p className="text-muted-foreground mt-2">
+            Администрирование пользователей и ролей
+          </p>
+        </div>
+        <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-gradient-primary hover:opacity-90">
+              <UserPlus className="h-4 w-4 mr-2" />
+              Создать пользователя
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Создать нового пользователя</DialogTitle>
+              <DialogDescription>
+                Введите данные для создания нового менеджера или стажера
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="full_name">Полное имя *</Label>
+                <Input
+                  id="full_name"
+                  placeholder="Иванов Иван Иванович"
+                  value={newUserData.full_name}
+                  onChange={(e) => setNewUserData({ ...newUserData, full_name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="manager@example.com"
+                  value={newUserData.email}
+                  onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Пароль *</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Минимум 6 символов"
+                  value={newUserData.password}
+                  onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Телефон</Label>
+                <Input
+                  id="phone"
+                  placeholder="+996 XXX XXX XXX"
+                  value={newUserData.phone}
+                  onChange={(e) => setNewUserData({ ...newUserData, phone: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="role">Роль *</Label>
+                <Select 
+                  value={newUserData.role} 
+                  onValueChange={(value) => setNewUserData({ ...newUserData, role: value as AppRole })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="manager">Менеджер</SelectItem>
+                    <SelectItem value="intern">Стажер</SelectItem>
+                    <SelectItem value="super_admin">Супер Админ</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setCreateDialogOpen(false)} disabled={creatingUser}>
+                Отмена
+              </Button>
+              <Button onClick={createUser} disabled={creatingUser}>
+                {creatingUser ? 'Создание...' : 'Создать'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card className="p-6">
