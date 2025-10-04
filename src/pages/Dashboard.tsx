@@ -335,7 +335,8 @@ export default function Dashboard() {
 
               <Button 
                 className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setSelectedProperty({ id: property.id, number: property.property_number });
                   setViewingDialogOpen(true);
                 }}
