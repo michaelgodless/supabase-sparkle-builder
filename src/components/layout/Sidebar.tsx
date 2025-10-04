@@ -1,4 +1,5 @@
 import { Home, Building2, Star, Calendar, FileText, Settings, Users, Activity, LogOut } from 'lucide-react';
+import navigatorLogo from '@/assets/navigator-house-logo.png';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -75,9 +76,9 @@ export function Sidebar() {
       {/* Logo */}
       <div className="p-6 border-b border-primary-hover">
         <Link to="/dashboard" className="flex items-center gap-3">
-          <Building2 className="h-8 w-8 text-primary-foreground" />
+          <img src={navigatorLogo} alt="Navigator House" className="h-12 w-auto" />
           <div>
-            <h1 className="text-xl font-bold text-primary-foreground">CRM Estate</h1>
+            <h1 className="text-xl font-bold text-primary-foreground">Navigator House</h1>
             <p className="text-xs text-primary-foreground/70">Управление недвижимостью</p>
           </div>
         </Link>

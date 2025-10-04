@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2 } from 'lucide-react';
+import navigatorLogo from '@/assets/navigator-house-logo.png';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -29,12 +29,10 @@ export default function Login() {
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-4 text-center">
           <div className="flex justify-center">
-            <div className="p-3 rounded-2xl bg-gradient-primary shadow-lg">
-              <Building2 className="h-12 w-12 text-white" />
-            </div>
+            <img src={navigatorLogo} alt="Navigator House" className="h-24 w-auto" />
           </div>
-          <CardTitle className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            CRM Estate
+          <CardTitle className="text-3xl font-bold text-primary">
+            Navigator House
           </CardTitle>
           <CardDescription className="text-lg">
             Система управления недвижимостью
