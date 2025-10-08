@@ -22,22 +22,22 @@ const Landing = () => {
             />
             
             <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight">
-              Навигатор в мире
+              Ваш навигатор в мире
               <br />
               <span className="text-secondary">недвижимости</span>
             </h1>
             
             <p className="text-xl md:text-2xl text-white/90 max-w-2xl">
-              Профессиональная CRM-система для агентств недвижимости с автономными показами, защитой данных и полной прозрачностью процессов
+              Профессиональное агентство недвижимости с командой опытных риелторов. Поможем найти, купить или продать вашу недвижимость
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button 
                 size="lg" 
-                onClick={() => navigate('/login')}
+                onClick={() => navigate('/properties')}
                 className="bg-secondary hover:bg-secondary-hover text-white px-8 py-6 text-lg shadow-lg hover:shadow-xl transition-all"
               >
-                Начать работу
+                Смотреть объекты
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <Button 
@@ -46,7 +46,7 @@ const Landing = () => {
                 onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
                 className="bg-white/10 hover:bg-white/20 text-white border-white/30 px-8 py-6 text-lg backdrop-blur-sm"
               >
-                Узнать больше
+                О компании
               </Button>
             </div>
           </div>
@@ -58,10 +58,10 @@ const Landing = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-              Почему Navigator House?
+              Почему выбирают нас?
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Все инструменты для эффективной работы с недвижимостью в одной системе
+              Профессиональный подход и комплексное обслуживание на всех этапах сделки
             </p>
           </div>
 
@@ -69,11 +69,11 @@ const Landing = () => {
             <Card className="border-2 hover:border-primary/50 transition-all hover:shadow-lg">
               <CardContent className="pt-6 text-center space-y-4">
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                  <Shield className="h-8 w-8 text-primary" />
+                  <Users className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold">Защита данных</h3>
+                <h3 className="text-xl font-semibold">Команда профессионалов</h3>
                 <p className="text-muted-foreground">
-                  Многоуровневая система безопасности с контролем доступа к конфиденциальной информации
+                  Опытные риелторы с глубоким знанием рынка недвижимости
                 </p>
               </CardContent>
             </Card>
@@ -81,11 +81,11 @@ const Landing = () => {
             <Card className="border-2 hover:border-primary/50 transition-all hover:shadow-lg">
               <CardContent className="pt-6 text-center space-y-4">
                 <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto">
-                  <Eye className="h-8 w-8 text-secondary" />
+                  <Shield className="h-8 w-8 text-secondary" />
                 </div>
-                <h3 className="text-xl font-semibold">Автономные показы</h3>
+                <h3 className="text-xl font-semibold">Юридическая чистота</h3>
                 <p className="text-muted-foreground">
-                  Система записи и управления показами объектов с автоматическим назначением менеджеров
+                  Полная проверка документов и сопровождение сделки на всех этапах
                 </p>
               </CardContent>
             </Card>
@@ -93,11 +93,11 @@ const Landing = () => {
             <Card className="border-2 hover:border-primary/50 transition-all hover:shadow-lg">
               <CardContent className="pt-6 text-center space-y-4">
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                  <Users className="h-8 w-8 text-primary" />
+                  <Eye className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold">Управление командой</h3>
+                <h3 className="text-xl font-semibold">Индивидуальный подход</h3>
                 <p className="text-muted-foreground">
-                  Распределение ролей, отслеживание активности и аудит действий всех сотрудников
+                  Персональный менеджер и организация показов в удобное время
                 </p>
               </CardContent>
             </Card>
@@ -107,9 +107,9 @@ const Landing = () => {
                 <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto">
                   <Clock className="h-8 w-8 text-secondary" />
                 </div>
-                <h3 className="text-xl font-semibold">Экономия времени</h3>
+                <h3 className="text-xl font-semibold">Быстрые сделки</h3>
                 <p className="text-muted-foreground">
-                  Автоматизация рутинных процессов и быстрый доступ к актуальной базе объектов
+                  Оперативный поиск покупателей и проведение сделок в короткие сроки
                 </p>
               </CardContent>
             </Card>
@@ -123,20 +123,20 @@ const Landing = () => {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <h2 className="text-4xl md:text-5xl font-bold text-foreground">
-                Полный контроль над вашим бизнесом
+                Полный спектр услуг
               </h2>
               <p className="text-lg text-muted-foreground">
-                Navigator House — это не просто CRM, это комплексная экосистема для управления агентством недвижимости
+                Navigator House — это ваш надежный партнер в мире недвижимости
               </p>
               
               <div className="space-y-4">
                 {[
-                  "База объектов с детальной информацией и фотографиями",
-                  "Система показов с назначением ответственных менеджеров",
-                  "Контроль доступа к конфиденциальным данным",
-                  "Журнал аудита всех действий в системе",
-                  "Управление избранными объектами",
-                  "Адаптивный интерфейс для работы с любых устройств"
+                  "Продажа и покупка квартир, домов, коммерческой недвижимости",
+                  "Аренда жилой и коммерческой недвижимости",
+                  "Юридическое сопровождение сделок",
+                  "Помощь в оформлении ипотеки",
+                  "Консультации по инвестициям в недвижимость",
+                  "Оценка рыночной стоимости объектов"
                 ].map((benefit, index) => (
                   <div key={index} className="flex items-start gap-3">
                     <CheckCircle className="h-6 w-6 text-secondary flex-shrink-0 mt-0.5" />
@@ -153,31 +153,31 @@ const Landing = () => {
                   <div className="space-y-6">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-                        <Shield className="h-6 w-6 text-primary-foreground" />
+                        <Users className="h-6 w-6 text-primary-foreground" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-lg">Безопасность</h4>
-                        <p className="text-sm text-muted-foreground">3 уровня доступа</p>
+                        <h4 className="font-semibold text-lg">Опыт</h4>
+                        <p className="text-sm text-muted-foreground">Более 10 лет на рынке</p>
                       </div>
                     </div>
                     <div className="h-px bg-border"></div>
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center">
-                        <Users className="h-6 w-6 text-secondary-foreground" />
+                        <Shield className="h-6 w-6 text-secondary-foreground" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-lg">Команда</h4>
-                        <p className="text-sm text-muted-foreground">Неограниченно пользователей</p>
+                        <h4 className="font-semibold text-lg">Надежность</h4>
+                        <p className="text-sm text-muted-foreground">1000+ успешных сделок</p>
                       </div>
                     </div>
                     <div className="h-px bg-border"></div>
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-                        <Clock className="h-6 w-6 text-primary-foreground" />
+                        <CheckCircle className="h-6 w-6 text-primary-foreground" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-lg">Эффективность</h4>
-                        <p className="text-sm text-muted-foreground">Автоматизация процессов</p>
+                        <h4 className="font-semibold text-lg">Качество</h4>
+                        <p className="text-sm text-muted-foreground">Индивидуальный подход</p>
                       </div>
                     </div>
                   </div>
@@ -195,19 +195,29 @@ const Landing = () => {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center space-y-8">
             <h2 className="text-4xl md:text-5xl font-bold text-white">
-              Готовы начать работу с Navigator House?
+              Готовы найти недвижимость мечты?
             </h2>
             <p className="text-xl text-white/90">
-              Присоединяйтесь к профессионалам рынка недвижимости уже сегодня
+              Наши специалисты помогут вам на каждом этапе
             </p>
-            <Button 
-              size="lg" 
-              onClick={() => navigate('/login')}
-              className="bg-secondary hover:bg-secondary-hover text-white px-10 py-7 text-xl shadow-2xl hover:shadow-secondary/50 transition-all"
-            >
-              Войти в систему
-              <ArrowRight className="ml-2 h-6 w-6" />
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                size="lg" 
+                onClick={() => navigate('/properties')}
+                className="bg-secondary hover:bg-secondary-hover text-white px-10 py-7 text-xl shadow-2xl hover:shadow-secondary/50 transition-all"
+              >
+                Смотреть объекты
+                <ArrowRight className="ml-2 h-6 w-6" />
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline"
+                onClick={() => navigate('/login')}
+                className="bg-white/10 hover:bg-white/20 text-white border-white/30 px-10 py-7 text-xl backdrop-blur-sm"
+              >
+                Войти
+              </Button>
+            </div>
           </div>
         </div>
       </section>

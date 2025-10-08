@@ -7,6 +7,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
+import Properties from "@/pages/Properties";
+import PropertyPublicDetails from "@/pages/PropertyPublicDetails";
 import Dashboard from "@/pages/Dashboard";
 import MyProperties from "@/pages/MyProperties";
 import PropertyForm from "@/pages/PropertyForm";
@@ -32,6 +34,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/properties" element={<Properties />} />
+            <Route path="/properties/:id/public" element={<PropertyPublicDetails />} />
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/my-properties" element={<MyProperties />} />
