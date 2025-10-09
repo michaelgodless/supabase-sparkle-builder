@@ -20,9 +20,11 @@ interface Property {
   property_rooms: string | null;
   property_area_id: string | null;
   property_category_id: string | null;
+  property_subcategory_id: string | null;
   property_action_category_id: string | null;
   property_areas: { name: string } | null;
   property_categories: { name: string } | null;
+  property_subcategories: { name: string } | null;
   property_action_categories: { name: string } | null;
   property_photos: { photo_url: string }[];
 }
@@ -34,6 +36,7 @@ const Properties = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [actionFilter, setActionFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [subcategoryFilter, setSubcategoryFilter] = useState<string>("all");
   const [areaFilter, setAreaFilter] = useState<string>("all");
   const [roomsFilter, setRoomsFilter] = useState<string>("all");
   const [minPrice, setMinPrice] = useState<string>("");
@@ -42,6 +45,7 @@ const Properties = () => {
   
   const [actionCategories, setActionCategories] = useState<any[]>([]);
   const [propertyCategories, setPropertyCategories] = useState<any[]>([]);
+  const [propertySubcategories, setPropertySubcategories] = useState<any[]>([]);
   const [areas, setAreas] = useState<any[]>([]);
 
   useEffect(() => {
@@ -51,14 +55,16 @@ const Properties = () => {
 
   const fetchFilters = async () => {
     try {
-      const [actionsRes, categoriesRes, areasRes] = await Promise.all([
+      const [actionsRes, categoriesRes, subcategoriesRes, areasRes] = await Promise.all([
         supabase.from("property_action_categories").select("*"),
         supabase.from("property_categories").select("*"),
+        supabase.from("property_subcategories").select("*").order("name"),
         supabase.from("property_areas").select("*").order("name")
       ]);
       
       setActionCategories(actionsRes.data || []);
       setPropertyCategories(categoriesRes.data || []);
+      setPropertySubcategories(subcategoriesRes.data || []);
       setAreas(areasRes.data || []);
     } catch (error) {
       console.error("Error fetching filters:", error);
@@ -68,7 +74,7 @@ const Properties = () => {
   const fetchProperties = async () => {
     try {
       const { data, error } = await supabase
-        .from("properties_public")
+        .from("properties")
         .select(`
           id,
           property_number,
@@ -78,12 +84,15 @@ const Properties = () => {
           property_rooms,
           property_area_id,
           property_category_id,
+          property_subcategory_id,
           property_action_category_id,
           property_areas (name),
           property_categories (name),
+          property_subcategories (name),
           property_action_categories (name),
           property_photos (photo_url)
         `)
+        .eq("status", "published")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -107,6 +116,9 @@ const Properties = () => {
     const matchesCategory =
       categoryFilter === "all" || property.property_category_id === categoryFilter;
     
+    const matchesSubcategory =
+      subcategoryFilter === "all" || property.property_subcategory_id === subcategoryFilter;
+    
     const matchesArea =
       areaFilter === "all" || property.property_area_id === areaFilter;
     
@@ -118,7 +130,7 @@ const Properties = () => {
     const matchesPrice =
       property.price >= minPriceNum && property.price <= maxPriceNum;
 
-    return matchesSearch && matchesAction && matchesCategory && matchesArea && matchesRooms && matchesPrice;
+    return matchesSearch && matchesAction && matchesCategory && matchesSubcategory && matchesArea && matchesRooms && matchesPrice;
   });
 
   const formatPrice = (price: number, currency: string) => {
@@ -231,6 +243,24 @@ const Properties = () => {
                   </Select>
                 </div>
 
+                {/* Property Subcategory (Дежурка) */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Подтип</label>
+                  <Select value={subcategoryFilter} onValueChange={setSubcategoryFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Все" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Все</SelectItem>
+                      {propertySubcategories.map((subcat) => (
+                        <SelectItem key={subcat.id} value={subcat.id}>
+                          {subcat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {/* Rooms */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Количество комнат</label>
@@ -298,6 +328,7 @@ const Properties = () => {
                       setSearchTerm("");
                       setActionFilter("all");
                       setCategoryFilter("all");
+                      setSubcategoryFilter("all");
                       setAreaFilter("all");
                       setRoomsFilter("all");
                       setMinPrice("");
