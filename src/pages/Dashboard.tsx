@@ -38,6 +38,7 @@ export default function Dashboard() {
   const [subcategoryFilter, setSubcategoryFilter] = useState<string>("all");
   const [areaFilter, setAreaFilter] = useState<string>("all");
   const [roomsFilter, setRoomsFilter] = useState<string>("all");
+  const [conditionFilter, setConditionFilter] = useState<string>("all");
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
   
@@ -45,6 +46,7 @@ export default function Dashboard() {
   const [propertyCategories, setPropertyCategories] = useState<any[]>([]);
   const [propertySubcategories, setPropertySubcategories] = useState<any[]>([]);
   const [areas, setAreas] = useState<any[]>([]);
+  const [conditions, setConditions] = useState<any[]>([]);
   
   const { user, profile } = useAuth();
   const { toast } = useToast();
@@ -59,17 +61,19 @@ export default function Dashboard() {
 
   const fetchFilters = async () => {
     try {
-      const [actionsRes, categoriesRes, subcategoriesRes, areasRes] = await Promise.all([
+      const [actionsRes, categoriesRes, subcategoriesRes, areasRes, conditionsRes] = await Promise.all([
         supabase.from("property_action_categories").select("*"),
         supabase.from("property_categories").select("*"),
         supabase.from("property_subcategories").select("*").order("name"),
-        supabase.from("property_areas").select("*").order("name")
+        supabase.from("property_areas").select("*").order("name"),
+        supabase.from("property_conditions").select("*").order("name")
       ]);
       
       setActionCategories(actionsRes.data || []);
       setPropertyCategories(categoriesRes.data || []);
       setPropertySubcategories(subcategoriesRes.data || []);
       setAreas(areasRes.data || []);
+      setConditions(conditionsRes.data || []);
     } catch (error) {
       console.error("Error fetching filters:", error);
     }
@@ -197,12 +201,15 @@ export default function Dashboard() {
     const matchesRooms =
       roomsFilter === "all" || property.property_rooms === roomsFilter;
     
+    const matchesCondition =
+      conditionFilter === "all" || property.property_condition_id === conditionFilter;
+    
     const minPriceNum = minPrice ? parseFloat(minPrice) : 0;
     const maxPriceNum = maxPrice ? parseFloat(maxPrice) : Infinity;
     const matchesPrice =
       property.price >= minPriceNum && property.price <= maxPriceNum;
 
-    return matchesSearch && matchesAction && matchesCategory && matchesSubcategory && matchesArea && matchesRooms && matchesPrice;
+    return matchesSearch && matchesAction && matchesCategory && matchesSubcategory && matchesArea && matchesRooms && matchesCondition && matchesPrice;
   });
 
   const stats = [
@@ -404,6 +411,24 @@ export default function Dashboard() {
                 </Select>
               </div>
 
+              {/* Condition */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Состояние</label>
+                <Select value={conditionFilter} onValueChange={setConditionFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Все" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все</SelectItem>
+                    {conditions.map((condition) => (
+                      <SelectItem key={condition.id} value={condition.id}>
+                        {condition.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Min Price */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Цена от (USD)</label>
@@ -438,6 +463,7 @@ export default function Dashboard() {
                     setSubcategoryFilter("all");
                     setAreaFilter("all");
                     setRoomsFilter("all");
+                    setConditionFilter("all");
                     setMinPrice("");
                     setMaxPrice("");
                   }}

@@ -22,6 +22,7 @@ interface Property {
   property_category_id: string | null;
   property_subcategory_id: string | null;
   property_action_category_id: string | null;
+  property_condition_id: string | null;
   property_areas: { name: string } | null;
   property_categories: { name: string } | null;
   property_subcategories: { name: string } | null;
@@ -39,6 +40,7 @@ const Properties = () => {
   const [subcategoryFilter, setSubcategoryFilter] = useState<string>("all");
   const [areaFilter, setAreaFilter] = useState<string>("all");
   const [roomsFilter, setRoomsFilter] = useState<string>("all");
+  const [conditionFilter, setConditionFilter] = useState<string>("all");
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
   const [showFilters, setShowFilters] = useState(false);
@@ -47,6 +49,7 @@ const Properties = () => {
   const [propertyCategories, setPropertyCategories] = useState<any[]>([]);
   const [propertySubcategories, setPropertySubcategories] = useState<any[]>([]);
   const [areas, setAreas] = useState<any[]>([]);
+  const [conditions, setConditions] = useState<any[]>([]);
 
   useEffect(() => {
     fetchProperties();
@@ -55,17 +58,19 @@ const Properties = () => {
 
   const fetchFilters = async () => {
     try {
-      const [actionsRes, categoriesRes, subcategoriesRes, areasRes] = await Promise.all([
+      const [actionsRes, categoriesRes, subcategoriesRes, areasRes, conditionsRes] = await Promise.all([
         supabase.from("property_action_categories").select("*"),
         supabase.from("property_categories").select("*"),
         supabase.from("property_subcategories").select("*").order("name"),
-        supabase.from("property_areas").select("*").order("name")
+        supabase.from("property_areas").select("*").order("name"),
+        supabase.from("property_conditions").select("*").order("name")
       ]);
       
       setActionCategories(actionsRes.data || []);
       setPropertyCategories(categoriesRes.data || []);
       setPropertySubcategories(subcategoriesRes.data || []);
       setAreas(areasRes.data || []);
+      setConditions(conditionsRes.data || []);
     } catch (error) {
       console.error("Error fetching filters:", error);
     }
@@ -86,6 +91,7 @@ const Properties = () => {
           property_category_id,
           property_subcategory_id,
           property_action_category_id,
+          property_condition_id,
           property_areas (name),
           property_categories (name),
           property_subcategories (name),
@@ -125,12 +131,15 @@ const Properties = () => {
     const matchesRooms =
       roomsFilter === "all" || property.property_rooms === roomsFilter;
     
+    const matchesCondition =
+      conditionFilter === "all" || property.property_condition_id === conditionFilter;
+    
     const minPriceNum = minPrice ? parseFloat(minPrice) : 0;
     const maxPriceNum = maxPrice ? parseFloat(maxPrice) : Infinity;
     const matchesPrice =
       property.price >= minPriceNum && property.price <= maxPriceNum;
 
-    return matchesSearch && matchesAction && matchesCategory && matchesSubcategory && matchesArea && matchesRooms && matchesPrice;
+    return matchesSearch && matchesAction && matchesCategory && matchesSubcategory && matchesArea && matchesRooms && matchesCondition && matchesPrice;
   });
 
   const formatPrice = (price: number, currency: string) => {
@@ -297,6 +306,24 @@ const Properties = () => {
                   </Select>
                 </div>
 
+                {/* Condition */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Состояние</label>
+                  <Select value={conditionFilter} onValueChange={setConditionFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Все" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Все</SelectItem>
+                      {conditions.map((condition) => (
+                        <SelectItem key={condition.id} value={condition.id}>
+                          {condition.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {/* Min Price */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Цена от (USD)</label>
@@ -331,6 +358,7 @@ const Properties = () => {
                       setSubcategoryFilter("all");
                       setAreaFilter("all");
                       setRoomsFilter("all");
+                      setConditionFilter("all");
                       setMinPrice("");
                       setMaxPrice("");
                     }}
