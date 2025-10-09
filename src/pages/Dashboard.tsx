@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Property } from '@/types/database';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, TrendingUp, Calendar, Star } from 'lucide-react';
+import { Building2, TrendingUp, Calendar, Star, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ROOM_OPTIONS } from '@/types/property';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import AssignViewingDialog from '@/components/AssignViewingDialog';
@@ -14,6 +16,7 @@ import AssignViewingDialog from '@/components/AssignViewingDialog';
 interface PropertyWithPhotos extends Property {
   property_photos?: Array<{ photo_url: string; display_order: number }>;
   property_categories?: { name: string; code: string };
+  property_subcategories?: { name: string; code: string };
   property_action_categories?: { name: string; code: string };
   property_areas?: { name: string; full_name: string | null };
   property_proposals?: { name: string; code: string };
@@ -28,15 +31,49 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewingDialogOpen, setViewingDialogOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<{ id: string; number: number } | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  
+  const [actionFilter, setActionFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [subcategoryFilter, setSubcategoryFilter] = useState<string>("all");
+  const [areaFilter, setAreaFilter] = useState<string>("all");
+  const [roomsFilter, setRoomsFilter] = useState<string>("all");
+  const [minPrice, setMinPrice] = useState<string>("");
+  const [maxPrice, setMaxPrice] = useState<string>("");
+  
+  const [actionCategories, setActionCategories] = useState<any[]>([]);
+  const [propertyCategories, setPropertyCategories] = useState<any[]>([]);
+  const [propertySubcategories, setPropertySubcategories] = useState<any[]>([]);
+  const [areas, setAreas] = useState<any[]>([]);
+  
   const { user, profile } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
     fetchProperties();
+    fetchFilters();
     if (user) {
       fetchFavorites();
     }
   }, [user]);
+
+  const fetchFilters = async () => {
+    try {
+      const [actionsRes, categoriesRes, subcategoriesRes, areasRes] = await Promise.all([
+        supabase.from("property_action_categories").select("*"),
+        supabase.from("property_categories").select("*"),
+        supabase.from("property_subcategories").select("*").order("name"),
+        supabase.from("property_areas").select("*").order("name")
+      ]);
+      
+      setActionCategories(actionsRes.data || []);
+      setPropertyCategories(categoriesRes.data || []);
+      setPropertySubcategories(subcategoriesRes.data || []);
+      setAreas(areasRes.data || []);
+    } catch (error) {
+      console.error("Error fetching filters:", error);
+    }
+  };
 
   const fetchProperties = async () => {
     try {
@@ -46,14 +83,14 @@ export default function Dashboard() {
           *,
           property_photos(photo_url, display_order),
           property_categories(name, code),
+          property_subcategories(name, code),
           property_action_categories(name, code),
           property_areas(name, full_name),
           property_proposals(name, code),
           property_conditions(name, code)
         `)
         .in('status', ['published', 'no_ads'])
-        .order('created_at', { ascending: false })
-        .limit(20);
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setProperties(data || []);
@@ -138,10 +175,35 @@ export default function Dashboard() {
     }
   };
 
-  const filteredProperties = properties.filter((property) =>
-    property.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    property.property_number.toString().includes(searchQuery)
-  );
+  const filteredProperties = properties.filter((property) => {
+    const matchesSearch =
+      searchQuery === "" ||
+      property.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      property.property_number.toString().includes(searchQuery) ||
+      property.property_areas?.name.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesAction =
+      actionFilter === "all" || property.property_action_category_id === actionFilter;
+    
+    const matchesCategory =
+      categoryFilter === "all" || property.property_category_id === categoryFilter;
+    
+    const matchesSubcategory =
+      subcategoryFilter === "all" || property.property_subcategory_id === subcategoryFilter;
+    
+    const matchesArea =
+      areaFilter === "all" || property.property_area_id === areaFilter;
+    
+    const matchesRooms =
+      roomsFilter === "all" || property.property_rooms === roomsFilter;
+    
+    const minPriceNum = minPrice ? parseFloat(minPrice) : 0;
+    const maxPriceNum = maxPrice ? parseFloat(maxPrice) : Infinity;
+    const matchesPrice =
+      property.price >= minPriceNum && property.price <= maxPriceNum;
+
+    return matchesSearch && matchesAction && matchesCategory && matchesSubcategory && matchesArea && matchesRooms && matchesPrice;
+  });
 
   const stats = [
     {
@@ -230,14 +292,162 @@ export default function Dashboard() {
         })}
       </div>
 
-      {/* Search */}
-      <div className="flex gap-4">
-        <Input
-          placeholder="Поиск по адресу или номеру объявления..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-md h-12"
-        />
+      {/* Search and Filters */}
+      <div className="space-y-4">
+        <div className="flex flex-col md:flex-row gap-4">
+          <Input
+            placeholder="Поиск по адресу, номеру или району..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 h-12"
+          />
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2 h-12"
+          >
+            <Filter className="h-4 w-4" />
+            {showFilters ? "Скрыть фильтры" : "Показать фильтры"}
+          </Button>
+        </div>
+
+        {showFilters && (
+          <Card className="p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Action Type */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Тип предложения</label>
+                <Select value={actionFilter} onValueChange={setActionFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Все" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все</SelectItem>
+                    {actionCategories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Property Category */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Тип недвижимости</label>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Все" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все</SelectItem>
+                    {propertyCategories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Property Subcategory (Дежурка) */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Подтип (Дежурка)</label>
+                <Select value={subcategoryFilter} onValueChange={setSubcategoryFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Все" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все</SelectItem>
+                    {propertySubcategories.map((subcat) => (
+                      <SelectItem key={subcat.id} value={subcat.id}>
+                        {subcat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Rooms */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Количество комнат</label>
+                <Select value={roomsFilter} onValueChange={setRoomsFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Все" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все</SelectItem>
+                    {ROOM_OPTIONS.map((room) => (
+                      <SelectItem key={room.value} value={room.value}>
+                        {room.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Area */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Район</label>
+                <Select value={areaFilter} onValueChange={setAreaFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Все" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все</SelectItem>
+                    {areas.map((area) => (
+                      <SelectItem key={area.id} value={area.id}>
+                        {area.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Min Price */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Цена от (USD)</label>
+                <Input
+                  type="number"
+                  placeholder="Мин. цена"
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                />
+              </div>
+
+              {/* Max Price */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Цена до (USD)</label>
+                <Input
+                  type="number"
+                  placeholder="Макс. цена"
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                />
+              </div>
+
+              {/* Reset Filters */}
+              <div className="lg:col-span-3 flex justify-end">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setActionFilter("all");
+                    setCategoryFilter("all");
+                    setSubcategoryFilter("all");
+                    setAreaFilter("all");
+                    setRoomsFilter("all");
+                    setMinPrice("");
+                    setMaxPrice("");
+                  }}
+                >
+                  Сбросить фильтры
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
       </div>
 
       {/* Properties Grid */}
@@ -294,6 +504,11 @@ export default function Dashboard() {
                   {(property as any).property_categories && (
                     <Badge variant="secondary" className="text-xs">
                       {(property as any).property_categories.name}
+                    </Badge>
+                  )}
+                  {(property as any).property_subcategories && (
+                    <Badge variant="outline" className="text-xs">
+                      {(property as any).property_subcategories.name}
                     </Badge>
                   )}
                 </div>
