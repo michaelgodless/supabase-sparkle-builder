@@ -40,7 +40,7 @@ const Properties = () => {
   const fetchProperties = async () => {
     try {
       const { data, error } = await supabase
-        .from("properties")
+        .from("properties_public")
         .select(`
           id,
           property_number,
@@ -56,7 +56,6 @@ const Properties = () => {
           property_action_categories (name),
           property_photos (photo_url)
         `)
-        .eq("status", "published")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
