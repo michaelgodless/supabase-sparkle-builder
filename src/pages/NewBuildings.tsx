@@ -1,141 +1,359 @@
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Building2, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, MapPin, Home, Filter } from "lucide-react";
+import { ROOM_OPTIONS } from "@/types/property";
+
+interface Property {
+  id: string;
+  property_number: number;
+  price: number;
+  currency: string;
+  property_size: number | null;
+  property_rooms: string | null;
+  property_area_id: string | null;
+  property_category_id: string | null;
+  property_subcategory_id: string | null;
+  property_action_category_id: string | null;
+  property_areas: { name: string } | null;
+  property_categories: { name: string } | null;
+  property_subcategories: { name: string } | null;
+  property_action_categories: { name: string } | null;
+  property_photos: { photo_url: string }[];
+}
 
 export default function NewBuildings() {
+  const navigate = useNavigate();
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [actionFilter, setActionFilter] = useState<string>("all");
+  const [areaFilter, setAreaFilter] = useState<string>("all");
+  const [roomsFilter, setRoomsFilter] = useState<string>("all");
+  const [minPrice, setMinPrice] = useState<string>("");
+  const [maxPrice, setMaxPrice] = useState<string>("");
+  const [showFilters, setShowFilters] = useState(false);
+  
+  const [actionCategories, setActionCategories] = useState<any[]>([]);
+  const [areas, setAreas] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchProperties();
+    fetchFilters();
+  }, []);
+
+  const fetchFilters = async () => {
+    try {
+      const [actionsRes, areasRes] = await Promise.all([
+        supabase.from("property_action_categories").select("*"),
+        supabase.from("property_areas").select("*").order("name")
+      ]);
+      
+      setActionCategories(actionsRes.data || []);
+      setAreas(areasRes.data || []);
+    } catch (error) {
+      console.error("Error fetching filters:", error);
+    }
+  };
+
+  const fetchProperties = async () => {
+    try {
+      // Get the "on_duty" subcategory ID
+      const { data: subcategoryData } = await supabase
+        .from("property_subcategories")
+        .select("id")
+        .eq("code", "on_duty")
+        .single();
+
+      if (!subcategoryData) {
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("properties")
+        .select(`
+          id,
+          property_number,
+          price,
+          currency,
+          property_size,
+          property_rooms,
+          property_area_id,
+          property_category_id,
+          property_subcategory_id,
+          property_action_category_id,
+          property_areas (name),
+          property_categories (name),
+          property_subcategories (name),
+          property_action_categories (name),
+          property_photos (photo_url)
+        `)
+        .eq("status", "published")
+        .eq("property_subcategory_id", subcategoryData.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setProperties(data || []);
+    } catch (error) {
+      console.error("Error fetching properties:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredProperties = properties.filter((property) => {
+    const matchesSearch =
+      searchTerm === "" ||
+      property.property_number.toString().includes(searchTerm) ||
+      property.property_areas?.name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesAction =
+      actionFilter === "all" || property.property_action_category_id === actionFilter;
+    
+    const matchesArea =
+      areaFilter === "all" || property.property_area_id === areaFilter;
+    
+    const matchesRooms =
+      roomsFilter === "all" || property.property_rooms === roomsFilter;
+    
+    const minPriceNum = minPrice ? parseFloat(minPrice) : 0;
+    const maxPriceNum = maxPrice ? parseFloat(maxPrice) : Infinity;
+    const matchesPrice =
+      property.price >= minPriceNum && property.price <= maxPriceNum;
+
+    return matchesSearch && matchesAction && matchesArea && matchesRooms && matchesPrice;
+  });
+
+  const formatPrice = (price: number, currency: string) => {
+    return new Intl.NumberFormat("ru-RU").format(price) + " " + currency;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Новостройки</h1>
+        <h1 className="text-3xl font-bold text-foreground">Дежурки</h1>
         <p className="text-muted-foreground mt-2">
-          База новостроек и жилых комплексов
+          Каталог дежурных квартир
         </p>
       </div>
 
-      <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Требуется настройка базы данных</AlertTitle>
-        <AlertDescription className="mt-2">
-          <p className="mb-4">
-            Для работы раздела "Новостройки" необходимо создать таблицу в базе данных со следующими полями:
-          </p>
-          <ul className="list-disc list-inside space-y-1 text-sm mb-4">
-            <li>Название ЖК</li>
-            <li>Застройщик</li>
-            <li>Адрес/район</li>
-            <li>Срок сдачи</li>
-            <li>Планировки (связь с таблицей)</li>
-            <li>Фотографии</li>
-            <li>Прогресс строительства</li>
-            <li>Контакты отдела продаж</li>
-            <li>Цены</li>
-            <li>Инфраструктура</li>
-            <li>Координаты для карты</li>
-          </ul>
-          <p className="text-sm">
-            После создания таблицы и настройки RLS политик, этот раздел будет автоматически функционировать.
-          </p>
-        </AlertDescription>
-      </Alert>
+      {/* Filters */}
+      <section className="py-6 bg-muted/30 border rounded-lg">
+        <div className="px-4">
+          <div className="space-y-4">
+            {/* Search Bar and Filter Toggle */}
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Поиск по номеру или району..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2"
+              >
+                <Filter className="h-4 w-4" />
+                {showFilters ? "Скрыть фильтры" : "Показать фильтры"}
+              </Button>
+            </div>
 
-      <Card className="p-12 text-center">
-        <Building2 className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-        <h3 className="text-xl font-semibold mb-2">Раздел требует настройки</h3>
-        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-          Для начала работы с новостройками необходимо выполнить миграцию базы данных.
-          Обратитесь к разработчику или администратору системы.
-        </p>
-        <div className="flex gap-4 justify-center">
-          <Button variant="outline" disabled>
-            Создать новостройку
-          </Button>
-          <Button variant="outline" disabled>
-            Импорт из файла
-          </Button>
+            {/* Collapsible Filters */}
+            {showFilters && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t">
+                {/* Action Type */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Тип предложения</label>
+                  <Select value={actionFilter} onValueChange={setActionFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Все" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Все</SelectItem>
+                      {actionCategories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Rooms */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Количество комнат</label>
+                  <Select value={roomsFilter} onValueChange={setRoomsFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Все" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Все</SelectItem>
+                      {ROOM_OPTIONS.map((room) => (
+                        <SelectItem key={room.value} value={room.value}>
+                          {room.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Area */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Район</label>
+                  <Select value={areaFilter} onValueChange={setAreaFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Все" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Все</SelectItem>
+                      {areas.map((area) => (
+                        <SelectItem key={area.id} value={area.id}>
+                          {area.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Min Price */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Цена от (USD)</label>
+                  <Input
+                    type="number"
+                    placeholder="Мин. цена"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                  />
+                </div>
+
+                {/* Max Price */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Цена до (USD)</label>
+                  <Input
+                    type="number"
+                    placeholder="Макс. цена"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                  />
+                </div>
+
+                {/* Reset Filters */}
+                <div className="lg:col-span-3 flex justify-end">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      setSearchTerm("");
+                      setActionFilter("all");
+                      setAreaFilter("all");
+                      setRoomsFilter("all");
+                      setMinPrice("");
+                      setMaxPrice("");
+                    }}
+                  >
+                    Сбросить фильтры
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      </Card>
+      </section>
 
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Планируемый функционал:</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 border rounded-lg">
-            <h4 className="font-medium mb-2">📋 Карточки ЖК</h4>
-            <p className="text-sm text-muted-foreground">
-              Детальная информация о каждом жилом комплексе с фото и описанием
-            </p>
+      {/* Properties Grid */}
+      <section>
+        {filteredProperties.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <Home className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Дежурки не найдены</h3>
+              <p className="text-muted-foreground">
+                Попробуйте изменить параметры поиска
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProperties.map((property) => (
+              <Card
+                key={property.id}
+                className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => navigate(`/properties/${property.id}`)}
+              >
+                <div className="aspect-video bg-muted relative overflow-hidden">
+                  {property.property_photos?.[0] ? (
+                    <img
+                      src={property.property_photos[0].photo_url}
+                      alt={`Объект №${property.property_number}`}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <Home className="h-16 w-16 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="absolute top-2 right-2">
+                    <Badge className="bg-primary text-primary-foreground">
+                      {property.property_action_categories?.name || "—"}
+                    </Badge>
+                  </div>
+                </div>
+                <CardHeader>
+                  <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="text-xl">
+                      Объект №{property.property_number}
+                    </CardTitle>
+                    <Badge variant="secondary">
+                      Дежурка
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <MapPin className="h-4 w-4" />
+                    <span className="text-sm">
+                      {property.property_areas?.name || "Район не указан"}
+                    </span>
+                  </div>
+                  {property.property_size && (
+                    <p className="text-sm text-muted-foreground">
+                      Площадь: {property.property_size} м²
+                    </p>
+                  )}
+                  {property.property_rooms && (
+                    <p className="text-sm text-muted-foreground">
+                      Комнат: {property.property_rooms}
+                    </p>
+                  )}
+                  <div className="pt-2 border-t">
+                    <p className="text-2xl font-bold text-primary">
+                      {formatPrice(property.price, property.currency)}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-          <div className="p-4 border rounded-lg">
-            <h4 className="font-medium mb-2">🏗️ Прогресс строительства</h4>
-            <p className="text-sm text-muted-foreground">
-              Отслеживание этапов строительства с фотоотчетами
-            </p>
-          </div>
-          <div className="p-4 border rounded-lg">
-            <h4 className="font-medium mb-2">🗺️ Интеграция с картой</h4>
-            <p className="text-sm text-muted-foreground">
-              Расположение ЖК на карте с инфраструктурой района
-            </p>
-          </div>
-          <div className="p-4 border rounded-lg">
-            <h4 className="font-medium mb-2">📊 Планировки и цены</h4>
-            <p className="text-sm text-muted-foreground">
-              База планировок с актуальными ценами и наличием
-            </p>
-          </div>
-          <div className="p-4 border rounded-lg">
-            <h4 className="font-medium mb-2">📞 Контакты застройщика</h4>
-            <p className="text-sm text-muted-foreground">
-              Прямые контакты отдела продаж для быстрой связи
-            </p>
-          </div>
-          <div className="p-4 border rounded-lg">
-            <h4 className="font-medium mb-2">🔍 Фильтрация</h4>
-            <p className="text-sm text-muted-foreground">
-              Поиск по району, цене, сроку сдачи и другим параметрам
-            </p>
-          </div>
-        </div>
-      </Card>
-
-      <Card className="p-6 bg-muted/50">
-        <h3 className="text-lg font-semibold mb-3">Пример SQL миграции:</h3>
-        <pre className="bg-background p-4 rounded-lg text-xs overflow-x-auto">
-{`-- Создание таблицы новостроек
-CREATE TABLE public.new_buildings (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  developer TEXT NOT NULL,
-  address TEXT NOT NULL,
-  area_id UUID REFERENCES property_areas(id),
-  completion_date DATE,
-  construction_progress INTEGER DEFAULT 0,
-  description TEXT,
-  infrastructure TEXT[],
-  sales_contacts JSONB,
-  latitude NUMERIC,
-  longitude NUMERIC,
-  created_by UUID REFERENCES profiles(id),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-);
-
--- RLS политики
-ALTER TABLE public.new_buildings ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Anyone can view new buildings"
-  ON public.new_buildings FOR SELECT
-  TO authenticated
-  USING (true);
-
-CREATE POLICY "Managers can create new buildings"
-  ON public.new_buildings FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    has_any_role(auth.uid(), ARRAY['manager'::app_role, 'super_admin'::app_role])
-  );`}
-        </pre>
-      </Card>
+        )}
+      </section>
     </div>
   );
 }
