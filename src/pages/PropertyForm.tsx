@@ -25,6 +25,8 @@ import {
   ROOM_OPTIONS,
   generateFloorOptions
 } from '@/types/property';
+import { Badge } from '@/components/ui/badge';
+import { X, UserPlus } from 'lucide-react';
 
 export default function PropertyForm() {
   const navigate = useNavigate();
@@ -73,16 +75,23 @@ export default function PropertyForm() {
   const [selectedCommunications, setSelectedCommunications] = useState<string[]>([]);
   const [selectedFurniture, setSelectedFurniture] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  
+  // Collaborators state
+  const [collaborators, setCollaborators] = useState<any[]>([]);
+  const [availableManagers, setAvailableManagers] = useState<any[]>([]);
+  const [selectedCollaborator, setSelectedCollaborator] = useState('');
 
   // Загрузка справочников
   useEffect(() => {
     loadReferenceData();
+    loadAvailableManagers();
   }, []);
 
   // Загрузка данных объявления в режиме редактирования
   useEffect(() => {
     if (isEditMode && propertyId) {
       loadPropertyData(propertyId);
+      loadCollaborators(propertyId);
     }
   }, [isEditMode, propertyId]);
 
@@ -147,6 +156,92 @@ export default function PropertyForm() {
       navigate('/my-properties');
     } finally {
       setLoadingData(false);
+    }
+  };
+
+  const loadAvailableManagers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .neq('id', user?.id || '');
+      
+      if (error) throw error;
+      if (data) setAvailableManagers(data);
+    } catch (error) {
+      console.error('Error loading managers:', error);
+    }
+  };
+
+  const loadCollaborators = async (propertyId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('property_collaborators')
+        .select(`
+          id,
+          user_id,
+          profiles:user_id (id, full_name, email)
+        `)
+        .eq('property_id', propertyId);
+      
+      if (error) throw error;
+      if (data) setCollaborators(data);
+    } catch (error) {
+      console.error('Error loading collaborators:', error);
+    }
+  };
+
+  const handleAddCollaborator = async () => {
+    if (!selectedCollaborator || !propertyId) return;
+
+    try {
+      const { error } = await supabase
+        .from('property_collaborators')
+        .insert({
+          property_id: propertyId,
+          user_id: selectedCollaborator,
+          added_by: user?.id
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Успешно',
+        description: 'Договорник добавлен',
+      });
+
+      loadCollaborators(propertyId);
+      setSelectedCollaborator('');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: error.message,
+      });
+    }
+  };
+
+  const handleRemoveCollaborator = async (collaboratorId: string) => {
+    try {
+      const { error } = await supabase
+        .from('property_collaborators')
+        .delete()
+        .eq('id', collaboratorId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Успешно',
+        description: 'Договорник удален',
+      });
+
+      loadCollaborators(propertyId!);
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: error.message,
+      });
     }
   };
 
@@ -807,6 +902,64 @@ export default function PropertyForm() {
                 />
               </div>
             </div>
+
+            {/* Группа 10: Дополнительные договорники (только в режиме редактирования) */}
+            {isEditMode && (
+              <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
+                <div>
+                  <Label>Дополнительные договорники</Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Добавленные менеджеры получат те же права что и автор объявления
+                  </p>
+                </div>
+                
+                {collaborators.length > 0 && (
+                  <div className="space-y-2">
+                    {collaborators.map((collab) => (
+                      <div key={collab.id} className="flex items-center justify-between p-2 bg-background rounded border">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary">{collab.profiles?.full_name}</Badge>
+                          <span className="text-sm text-muted-foreground">{collab.profiles?.email}</span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveCollaborator(collab.id)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <Select value={selectedCollaborator} onValueChange={setSelectedCollaborator}>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Выберите менеджера" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableManagers
+                        .filter(m => !collaborators.some(c => c.user_id === m.id))
+                        .map(manager => (
+                          <SelectItem key={manager.id} value={manager.id}>
+                            {manager.full_name} ({manager.email})
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    onClick={handleAddCollaborator}
+                    disabled={!selectedCollaborator}
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Добавить
+                  </Button>
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-4 pt-4">
               <Button type="submit" disabled={loading} className="bg-gradient-primary">
