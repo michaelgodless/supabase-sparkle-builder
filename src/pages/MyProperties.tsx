@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Eye, MapPin, Building2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, MapPin, Building2, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Property } from '@/types/database';
 import { Database } from '@/integrations/supabase/types';
@@ -19,13 +19,15 @@ interface PropertyWithPhotos extends Property {
   property_action_categories?: { name: string; code: string };
   property_areas?: { name: string; full_name: string | null };
   property_conditions?: { name: string; code: string };
+  is_featured?: boolean;
+  featured_order?: number;
 }
 
 export default function MyProperties() {
   const [properties, setProperties] = useState<PropertyWithPhotos[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -51,7 +53,23 @@ export default function MyProperties() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProperties(data || []);
+      
+      // Fetch featured properties info
+      const { data: featuredData } = await supabase
+        .from('featured_properties')
+        .select('property_id, display_order');
+      
+      const featuredMap = new Map(
+        (featuredData || []).map(f => [f.property_id, f.display_order])
+      );
+      
+      const propertiesWithFeatured = (data || []).map(p => ({
+        ...p,
+        is_featured: featuredMap.has(p.id),
+        featured_order: featuredMap.get(p.id)
+      }));
+      
+      setProperties(propertiesWithFeatured);
     } catch (error) {
       console.error('Error fetching properties:', error);
       toast({
@@ -122,6 +140,82 @@ export default function MyProperties() {
       sold: <Badge className="bg-blue-500">Продано</Badge>,
     };
     return badges[status as keyof typeof badges] || null;
+  };
+
+  const toggleFeatured = async (propertyId: string, isFeatured: boolean, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!isAdmin) {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Только супер админ может управлять избранными объявлениями',
+      });
+      return;
+    }
+
+    try {
+      if (isFeatured) {
+        // Remove from featured
+        const { error } = await supabase
+          .from('featured_properties')
+          .delete()
+          .eq('property_id', propertyId);
+
+        if (error) throw error;
+
+        toast({
+          title: 'Успешно',
+          description: 'Убрано из избранного',
+        });
+      } else {
+        // Check if we have less than 5 featured
+        const { data: existingFeatured } = await supabase
+          .from('featured_properties')
+          .select('id');
+
+        if ((existingFeatured || []).length >= 5) {
+          toast({
+            variant: 'destructive',
+            title: 'Ошибка',
+            description: 'Максимум 5 избранных объявлений. Удалите одно, чтобы добавить новое.',
+          });
+          return;
+        }
+
+        // Get next available order
+        const { data: featuredOrders } = await supabase
+          .from('featured_properties')
+          .select('display_order');
+
+        const usedOrders = (featuredOrders || []).map(f => f.display_order);
+        const nextOrder = [1, 2, 3, 4, 5].find(n => !usedOrders.includes(n)) || 1;
+
+        const { error } = await supabase
+          .from('featured_properties')
+          .insert({
+            property_id: propertyId,
+            display_order: nextOrder,
+            created_by: user?.id
+          });
+
+        if (error) throw error;
+
+        toast({
+          title: 'Успешно',
+          description: `Добавлено в избранное (позиция ${nextOrder})`,
+        });
+      }
+
+      fetchMyProperties();
+    } catch (error) {
+      console.error('Error toggling featured:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Не удалось обновить статус избранного',
+      });
+    }
   };
 
   if (loading) {
@@ -268,7 +362,10 @@ export default function MyProperties() {
                     variant="outline"
                     size="sm"
                     className="flex-1"
-                    onClick={() => navigate(`/properties/${property.id}`)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/properties/${property.id}`);
+                    }}
                   >
                     <Eye className="h-4 w-4 mr-2" />
                     Просмотр
@@ -276,17 +373,33 @@ export default function MyProperties() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigate(`/properties/${property.id}/edit`)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/properties/${property.id}/edit`);
+                    }}
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleDelete(property.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(property.id);
+                    }}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
+                  {isAdmin && property.status === 'published' && (
+                    <Button
+                      variant={property.is_featured ? "default" : "outline"}
+                      size="sm"
+                      onClick={(e) => toggleFeatured(property.id, property.is_featured || false, e)}
+                      className={property.is_featured ? "bg-primary" : ""}
+                    >
+                      <Star className={`h-4 w-4 ${property.is_featured ? 'fill-current' : ''}`} />
+                    </Button>
+                  )}
                 </div>
               </div>
             </Card>
