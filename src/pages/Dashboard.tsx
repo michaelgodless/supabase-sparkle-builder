@@ -21,6 +21,8 @@ interface PropertyWithPhotos extends Property {
   property_areas?: { name: string; full_name: string | null };
   property_proposals?: { name: string; code: string };
   property_conditions?: { name: string; code: string };
+  is_featured?: boolean;
+  featured_order?: number;
 }
 
 export default function Dashboard() {
@@ -48,7 +50,7 @@ export default function Dashboard() {
   const [areas, setAreas] = useState<any[]>([]);
   const [conditions, setConditions] = useState<any[]>([]);
   
-  const { user, profile } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -97,7 +99,23 @@ export default function Dashboard() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProperties(data || []);
+      
+      // Fetch featured properties info
+      const { data: featuredData } = await supabase
+        .from('featured_properties')
+        .select('property_id, display_order');
+      
+      const featuredMap = new Map(
+        (featuredData || []).map(f => [f.property_id, f.display_order])
+      );
+      
+      const propertiesWithFeatured = (data || []).map(p => ({
+        ...p,
+        is_featured: featuredMap.has(p.id),
+        featured_order: featuredMap.get(p.id)
+      }));
+      
+      setProperties(propertiesWithFeatured);
     } catch (error) {
       console.error('Error fetching properties:', error);
     } finally {
@@ -175,6 +193,82 @@ export default function Dashboard() {
         variant: 'destructive',
         title: 'Ошибка',
         description: 'Не удалось обновить избранное',
+      });
+    }
+  };
+
+  const toggleFeaturedProperty = async (propertyId: string, isFeatured: boolean, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!isAdmin) {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Только супер админ может управлять избранными объявлениями',
+      });
+      return;
+    }
+
+    try {
+      if (isFeatured) {
+        // Remove from featured
+        const { error } = await supabase
+          .from('featured_properties')
+          .delete()
+          .eq('property_id', propertyId);
+
+        if (error) throw error;
+
+        toast({
+          title: 'Успешно',
+          description: 'Объявление убрано из избранного на главной',
+        });
+      } else {
+        // Check if we have less than 5 featured
+        const { data: existingFeatured } = await supabase
+          .from('featured_properties')
+          .select('id');
+
+        if ((existingFeatured || []).length >= 5) {
+          toast({
+            variant: 'destructive',
+            title: 'Ошибка',
+            description: 'Максимум 5 избранных объявлений. Удалите одно в админ панели.',
+          });
+          return;
+        }
+
+        // Get next available order
+        const { data: featuredOrders } = await supabase
+          .from('featured_properties')
+          .select('display_order');
+
+        const usedOrders = (featuredOrders || []).map(f => f.display_order);
+        const nextOrder = [1, 2, 3, 4, 5].find(n => !usedOrders.includes(n)) || 1;
+
+        const { error } = await supabase
+          .from('featured_properties')
+          .insert({
+            property_id: propertyId,
+            display_order: nextOrder,
+            created_by: user?.id
+          });
+
+        if (error) throw error;
+
+        toast({
+          title: 'Успешно',
+          description: `Объявление добавлено на главную страницу (позиция ${nextOrder})`,
+        });
+      }
+
+      fetchProperties();
+    } catch (error) {
+      console.error('Error toggling featured property:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Не удалось обновить статус избранного',
       });
     }
   };
@@ -482,7 +576,19 @@ export default function Dashboard() {
           <Card key={property.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer" onClick={() => navigate(`/properties/${property.id}`)}>
             <div className="aspect-video bg-muted relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
-              <div className="absolute top-4 right-4 z-20">
+              <div className="absolute top-4 right-4 z-20 flex gap-2">
+                {isAdmin && property.status === 'published' && (
+                  <Button 
+                    size="icon" 
+                    variant={property.is_featured ? "default" : "secondary"}
+                    className={`rounded-full shadow-lg ${property.is_featured ? 'bg-primary' : ''}`}
+                    onClick={(e) => toggleFeaturedProperty(property.id, property.is_featured || false, e)}
+                  >
+                    <Star 
+                      className={`h-4 w-4 ${property.is_featured ? 'fill-current' : ''}`}
+                    />
+                  </Button>
+                )}
                 <Button 
                   size="icon" 
                   variant="secondary" 
