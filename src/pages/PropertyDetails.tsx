@@ -10,10 +10,16 @@ import { ArrowLeft, Building2, MapPin, Ruler, Home, Calendar, Phone, User, Dolla
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
+// Helper to check if user can see owner contacts
+const canSeeOwnerContacts = (userId: string | undefined, propertyCreatedBy: string, isAdmin: boolean) => {
+  if (!userId) return false;
+  return userId === propertyCreatedBy || isAdmin;
+};
+
 export default function PropertyDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [property, setProperty] = useState<any>(null);
   const [viewings, setViewings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -472,22 +478,24 @@ export default function PropertyDetails() {
             </CardHeader>
           </Card>
 
-          {/* Owner Contact */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Контакты владельца</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{property.owner_name}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{property.owner_contacts}</span>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Owner Contact - Only visible to author and super admin */}
+          {canSeeOwnerContacts(user?.id, property.created_by, isAdmin) && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Контакты владельца</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{property.owner_name}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{property.owner_contacts}</span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Manager Info */}
           {property.profiles && (
