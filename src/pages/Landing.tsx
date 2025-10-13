@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Shield, Users, Eye, Clock, CheckCircle, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import navigatorLogo from "@/assets/navigator-house-logo.png";
+import { FeaturedPropertiesCarousel } from "@/components/FeaturedPropertiesCarousel";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -52,6 +53,9 @@ const Landing = () => {
           </div>
         </div>
       </section>
+
+      {/* Featured Properties Carousel */}
+      <FeaturedPropertiesCarousel />
 
       {/* Features Section */}
       <section id="features" className="py-20 bg-muted/30">

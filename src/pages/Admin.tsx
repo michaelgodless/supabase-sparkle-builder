@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Search, UserCheck, UserX, Shield, UserPlus } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FeaturedPropertiesManager } from '@/components/FeaturedPropertiesManager';
 import {
   Select,
   SelectContent,
@@ -294,13 +296,27 @@ export default function Admin() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Управление пользователями</h1>
-          <p className="text-muted-foreground mt-2">
-            Администрирование пользователей и ролей
-          </p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Панель администратора</h1>
+        <p className="text-muted-foreground">
+          Управление пользователями, ролями и контентом
+        </p>
+      </div>
+
+      <Tabs defaultValue="users" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="users">Пользователи</TabsTrigger>
+          <TabsTrigger value="featured">Избранное на главной</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="users" className="space-y-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-2xl font-bold text-foreground">Управление пользователями</h2>
+              <p className="text-muted-foreground mt-1">
+                Администрирование пользователей и ролей
+              </p>
+            </div>
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-gradient-primary hover:opacity-90">
@@ -381,9 +397,9 @@ export default function Admin() {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
+          </div>
 
-      <Card className="p-6">
+          <Card className="p-6">
         <div className="flex gap-4 mb-6">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -521,6 +537,12 @@ export default function Admin() {
           </Table>
         </div>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="featured">
+          <FeaturedPropertiesManager />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
