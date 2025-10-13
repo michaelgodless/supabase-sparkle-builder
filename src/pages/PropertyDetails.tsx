@@ -10,12 +10,6 @@ import { ArrowLeft, Building2, MapPin, Ruler, Home, Calendar, Phone, User, Dolla
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
-// Helper to check if user can see owner contacts
-const canSeeOwnerContacts = (userId: string | undefined, propertyCreatedBy: string, isAdmin: boolean) => {
-  if (!userId) return false;
-  return userId === propertyCreatedBy || isAdmin;
-};
-
 export default function PropertyDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -25,14 +19,16 @@ export default function PropertyDetails() {
   const [loading, setLoading] = useState(true);
   const [selectedPhoto, setSelectedPhoto] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isCollaborator, setIsCollaborator] = useState(false);
 
   useEffect(() => {
     if (id) {
       fetchPropertyDetails();
       fetchViewings();
       checkFavorite();
+      checkCollaborator();
     }
-  }, [id]);
+  }, [id, user?.id]);
 
   const fetchPropertyDetails = async () => {
     try {
@@ -103,6 +99,23 @@ export default function PropertyDetails() {
       setIsFavorite(!!data);
     } catch (error) {
       // Not in favorites
+    }
+  };
+
+  const checkCollaborator = async () => {
+    if (!user?.id || !id) return;
+    
+    try {
+      const { data } = await supabase
+        .from('property_collaborators')
+        .select('id')
+        .eq('property_id', id)
+        .eq('user_id', user.id)
+        .single();
+
+      setIsCollaborator(!!data);
+    } catch (error) {
+      // Not a collaborator
     }
   };
 
@@ -226,7 +239,7 @@ export default function PropertyDetails() {
           </div>
         </div>
         <div className="flex gap-2">
-          {user && property.created_by === user.id && (
+          {user && (property.created_by === user.id || isCollaborator || isAdmin) && (
             <Button
               variant="outline"
               onClick={() => navigate(`/properties/${id}/edit`)}
@@ -478,8 +491,8 @@ export default function PropertyDetails() {
             </CardHeader>
           </Card>
 
-          {/* Owner Contact - Only visible to author and super admin */}
-          {canSeeOwnerContacts(user?.id, property.created_by, isAdmin) && (
+          {/* Owner Contact - Only visible to author, collaborators and super admin */}
+          {user && (user.id === property.created_by || isCollaborator || isAdmin) && (
             <Card>
               <CardHeader>
                 <CardTitle>Контакты владельца</CardTitle>
