@@ -4,6 +4,7 @@ import { Shield, Users, Eye, Clock, CheckCircle, ArrowRight } from "lucide-react
 import { useNavigate } from "react-router-dom";
 import navigatorLogo from "@/assets/navigator-house-logo.png";
 import { FeaturedPropertiesGrid } from "@/components/FeaturedPropertiesGrid";
+import { ManagersSection } from "@/components/ManagersSection";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -56,6 +57,9 @@ const Landing = () => {
 
       {/* Featured Properties Grid */}
       <FeaturedPropertiesGrid />
+
+      {/* Managers Section */}
+      <ManagersSection />
 
       {/* Features Section */}
       <section id="features" className="py-20 bg-muted/30">
