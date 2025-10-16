@@ -40,7 +40,8 @@ export function FeaturedPropertiesGrid() {
     try {
       const { data, error } = await supabase
         .from("featured_properties")
-        .select(`
+        .select(
+          `
           id,
           property_id,
           display_order,
@@ -56,7 +57,8 @@ export function FeaturedPropertiesGrid() {
             property_subcategory_id,
             property_action_category_id
           )
-        `)
+        `,
+        )
         .order("display_order", { ascending: true });
 
       if (error) throw error;
@@ -74,7 +76,7 @@ export function FeaturedPropertiesGrid() {
             ...item,
             property_photos: photos || [],
           };
-        })
+        }),
       );
 
       setFeatured(propertiesWithPhotos as any);
@@ -96,9 +98,7 @@ export function FeaturedPropertiesGrid() {
           <Badge variant="secondary" className="mb-3">
             Рекомендуемые объекты
           </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-            Избранная недвижимость
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground">Лучшие предложения</h2>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
@@ -125,20 +125,14 @@ export function FeaturedPropertiesGrid() {
                     </div>
                   )}
                   <div className="absolute top-3 left-3">
-                    <Badge className="bg-primary text-primary-foreground shadow-lg">
-                      №{property.property_number}
-                    </Badge>
+                    <Badge className="bg-primary text-primary-foreground shadow-lg">№{property.property_number}</Badge>
                   </div>
                 </div>
 
                 <CardContent className="p-5 space-y-3">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-primary">
-                      {property.price.toLocaleString("ru-RU")}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      {property.currency}
-                    </span>
+                    <span className="text-2xl font-bold text-primary">{property.price.toLocaleString("ru-RU")}</span>
+                    <span className="text-sm text-muted-foreground">{property.currency}</span>
                   </div>
 
                   <div className="flex items-start gap-2 text-muted-foreground min-h-[40px]">
@@ -151,9 +145,7 @@ export function FeaturedPropertiesGrid() {
                       <div className="flex items-center gap-1.5 text-sm">
                         <Bed className="h-4 w-4 text-muted-foreground" />
                         <span>
-                          {property.property_rooms === "studio"
-                            ? "Студия"
-                            : `${property.property_rooms} комн.`}
+                          {property.property_rooms === "studio" ? "Студия" : `${property.property_rooms} комн.`}
                         </span>
                       </div>
                     )}
