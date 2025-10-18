@@ -93,8 +93,7 @@ const PropertyPublicDetails = () => {
 
   const handleContactRequest = () => {
     const message = `Хочу узнать подробнее об этом объекте: ${window.location.href}`;
-    const encodedMessage = encodeURIComponent(message).replace(/%20/g, '+');
-    const whatsappUrl = `https://wa.me/996503090699?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/996503090699?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 
