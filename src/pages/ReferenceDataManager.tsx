@@ -201,31 +201,30 @@ export default function ReferenceDataManager() {
         </div>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ReferenceType)}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="property_series">Серии</TabsTrigger>
-            <TabsTrigger value="property_developers">Застройщики</TabsTrigger>
-            <TabsTrigger value="property_areas">Районы</TabsTrigger>
-          </TabsList>
-
-          {(["property_series", "property_developers", "property_areas"] as ReferenceType[]).map((type) => (
-            <TabsContent key={type} value={type} className="space-y-4">
-              <div className="flex gap-2">
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button
-                      onClick={() => {
-                        setEditItem(null);
-                        setNewItemName("");
-                      }}
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      Добавить
-                    </Button>
-                  </DialogTrigger>
+          <div className="flex justify-between items-center mb-4">
+            <TabsList className="grid grid-cols-3 w-auto">
+              <TabsTrigger value="property_series">Серии</TabsTrigger>
+              <TabsTrigger value="property_developers">Застройщики</TabsTrigger>
+              <TabsTrigger value="property_areas">Районы</TabsTrigger>
+            </TabsList>
+            
+            <div className="flex gap-2">
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    onClick={() => {
+                      setEditItem(null);
+                      setNewItemName("");
+                    }}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Добавить
+                  </Button>
+                </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>
-                        {editItem ? "Редактировать" : "Добавить"} {REFERENCE_LABELS[type]}
+                        {editItem ? "Редактировать" : "Добавить"} {REFERENCE_LABELS[activeTab]}
                       </DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
@@ -263,18 +262,21 @@ export default function ReferenceDataManager() {
                     accept=".csv,.txt"
                     onChange={handleImport}
                     style={{ display: "none" }}
-                    id={`import-${type}`}
+                    id={`import-${activeTab}`}
                   />
                   <Button
                     variant="outline"
-                    onClick={() => document.getElementById(`import-${type}`)?.click()}
+                    onClick={() => document.getElementById(`import-${activeTab}`)?.click()}
                   >
                     <Upload className="mr-2 h-4 w-4" />
                     Импорт CSV
                   </Button>
                 </div>
-              </div>
+            </div>
+          </div>
 
+          {(["property_series", "property_developers", "property_areas"] as ReferenceType[]).map((type) => (
+            <TabsContent key={type} value={type} className="space-y-4">
               <div className="border rounded-lg">
                 <Table>
                   <TableHeader>
