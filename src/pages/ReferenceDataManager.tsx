@@ -168,15 +168,37 @@ export default function ReferenceDataManager() {
         }
 
         setLoading(true);
+        
+        // Получаем существующие записи
+        const { data: existing, error: fetchError } = await supabase
+          .from(activeTab)
+          .select("name");
+        
+        if (fetchError) throw fetchError;
+        
+        // Фильтруем только новые имена
+        const existingNames = new Set(existing?.map(item => item.name.toLowerCase()) || []);
+        const newNames = names.filter(name => !existingNames.has(name.toLowerCase()));
+        
+        if (newNames.length === 0) {
+          toast({
+            title: "Информация",
+            description: "Все записи уже существуют в справочнике",
+          });
+          setLoading(false);
+          return;
+        }
+
         const { error } = await supabase
           .from(activeTab)
-          .insert(names.map((name) => ({ name })));
+          .insert(newNames.map((name) => ({ name })));
 
         if (error) throw error;
         
+        const skipped = names.length - newNames.length;
         toast({
           title: "Успешно импортировано",
-          description: `Добавлено ${names.length} элементов`,
+          description: `Добавлено ${newNames.length} элементов${skipped > 0 ? `, пропущено дубликатов: ${skipped}` : ''}`,
         });
         fetchItems(activeTab);
       } catch (error: any) {
