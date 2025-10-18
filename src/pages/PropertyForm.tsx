@@ -67,6 +67,7 @@ export default function PropertyForm() {
     property_floor_from_old: '',
     address: '',
     price: '',
+    price_in_hand: '',
     currency: 'USD',
     description: '',
     owner_name: '',
@@ -132,6 +133,7 @@ export default function PropertyForm() {
           property_floor_from_old: data.property_floor_from_old?.toString() || '',
           address: data.address || '',
           price: data.price?.toString() || '',
+          price_in_hand: data.price_in_hand?.toString() || '',
           currency: data.currency || 'USD',
           description: data.description || '',
           owner_name: data.owner_name || '',
@@ -339,6 +341,7 @@ export default function PropertyForm() {
         property_floor_from_old: formData.property_floor_from_old ? parseInt(formData.property_floor_from_old) : null,
         address: formData.address,
         price: parseFloat(formData.price),
+        price_in_hand: formData.price_in_hand ? parseFloat(formData.price_in_hand) : null,
         currency: formData.currency,
         description: formData.description || null,
         owner_name: formData.owner_name,
@@ -721,6 +724,17 @@ export default function PropertyForm() {
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                   required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="price_in_hand">Цена на руку</Label>
+                <Input
+                  id="price_in_hand"
+                  type="number"
+                  step="0.01"
+                  value={formData.price_in_hand}
+                  onChange={(e) => setFormData({ ...formData, price_in_hand: e.target.value })}
                 />
               </div>
 

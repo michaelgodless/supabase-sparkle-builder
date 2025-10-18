@@ -419,6 +419,7 @@ export type Database = {
           owner_name: string
           payment_methods: string[] | null
           price: number
+          price_in_hand: number | null
           property_action_category_id: string | null
           property_area_id: string | null
           property_area_old: string | null
@@ -459,6 +460,7 @@ export type Database = {
           owner_name: string
           payment_methods?: string[] | null
           price: number
+          price_in_hand?: number | null
           property_action_category_id?: string | null
           property_area_id?: string | null
           property_area_old?: string | null
@@ -499,6 +501,7 @@ export type Database = {
           owner_name?: string
           payment_methods?: string[] | null
           price?: number
+          price_in_hand?: number | null
           property_action_category_id?: string | null
           property_area_id?: string | null
           property_area_old?: string | null
