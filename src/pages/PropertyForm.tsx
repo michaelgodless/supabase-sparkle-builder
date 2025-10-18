@@ -68,6 +68,7 @@ export default function PropertyForm() {
     description: '',
     owner_name: '',
     owner_contacts: '',
+    property_series: '',
   });
 
   const [selectedPaymentTypes, setSelectedPaymentTypes] = useState<string[]>([]);
@@ -131,6 +132,7 @@ export default function PropertyForm() {
           description: data.description || '',
           owner_name: data.owner_name || '',
           owner_contacts: data.owner_contacts || '',
+          property_series: data.property_series || '',
         });
 
         if (data.property_payment_types) {
@@ -330,6 +332,7 @@ export default function PropertyForm() {
         description: formData.description || null,
         owner_name: formData.owner_name,
         owner_contacts: formData.owner_contacts,
+        property_series: formData.property_series || null,
       };
 
       let propertyIdToUse: string;
@@ -542,6 +545,19 @@ export default function PropertyForm() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Поле "Серия" показывается только для квартир */}
+              {propertyCategories.find(cat => cat.id === formData.property_category_id)?.code === 'apartment' && (
+                <div className="space-y-2">
+                  <Label htmlFor="property_series">Серия</Label>
+                  <Input
+                    id="property_series"
+                    value={formData.property_series}
+                    onChange={(e) => setFormData({ ...formData, property_series: e.target.value })}
+                    placeholder="Например: 105, 106, хрущевка"
+                  />
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="property_rooms">Количество комнат</Label>

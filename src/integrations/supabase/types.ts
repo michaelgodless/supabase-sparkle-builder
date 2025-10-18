@@ -431,6 +431,7 @@ export type Database = {
           property_proposal_id: string | null
           property_rooms: string | null
           property_rooms_old: number | null
+          property_series: string | null
           property_size: number | null
           property_status_id: string | null
           property_subcategory_id: string | null
@@ -469,6 +470,7 @@ export type Database = {
           property_proposal_id?: string | null
           property_rooms?: string | null
           property_rooms_old?: number | null
+          property_series?: string | null
           property_size?: number | null
           property_status_id?: string | null
           property_subcategory_id?: string | null
@@ -507,6 +509,7 @@ export type Database = {
           property_proposal_id?: string | null
           property_rooms?: string | null
           property_rooms_old?: number | null
+          property_series?: string | null
           property_size?: number | null
           property_status_id?: string | null
           property_subcategory_id?: string | null
