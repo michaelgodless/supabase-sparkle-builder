@@ -195,20 +195,20 @@ export default function ReferenceDataManager() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Управление справочниками</h1>
+      <div className="container mx-auto py-4 px-4 md:py-8">
+        <div className="mb-4 md:mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold">Управление справочниками</h1>
         </div>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ReferenceType)}>
-          <div className="flex justify-between items-center mb-4">
-            <TabsList className="grid grid-cols-3 w-auto">
-              <TabsTrigger value="property_series">Серии</TabsTrigger>
-              <TabsTrigger value="property_developers">Застройщики</TabsTrigger>
-              <TabsTrigger value="property_areas">Районы</TabsTrigger>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
+            <TabsList className="grid grid-cols-3 w-full sm:w-auto">
+              <TabsTrigger value="property_series" className="text-xs sm:text-sm">Серии</TabsTrigger>
+              <TabsTrigger value="property_developers" className="text-xs sm:text-sm">Застройщики</TabsTrigger>
+              <TabsTrigger value="property_areas" className="text-xs sm:text-sm">Районы</TabsTrigger>
             </TabsList>
             
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button
@@ -216,9 +216,11 @@ export default function ReferenceDataManager() {
                       setEditItem(null);
                       setNewItemName("");
                     }}
+                    className="flex-1 sm:flex-none"
                   >
                     <Plus className="mr-2 h-4 w-4" />
-                    Добавить
+                    <span className="hidden sm:inline">Добавить</span>
+                    <span className="sm:hidden">Добавить</span>
                   </Button>
                 </DialogTrigger>
                   <DialogContent>
@@ -256,7 +258,7 @@ export default function ReferenceDataManager() {
                   </DialogContent>
                 </Dialog>
 
-                <div>
+                <div className="flex-1 sm:flex-none">
                   <input
                     type="file"
                     accept=".csv,.txt"
@@ -267,9 +269,11 @@ export default function ReferenceDataManager() {
                   <Button
                     variant="outline"
                     onClick={() => document.getElementById(`import-${activeTab}`)?.click()}
+                    className="w-full sm:w-auto"
                   >
                     <Upload className="mr-2 h-4 w-4" />
-                    Импорт CSV
+                    <span className="hidden sm:inline">Импорт CSV</span>
+                    <span className="sm:hidden">Импорт</span>
                   </Button>
                 </div>
             </div>
@@ -277,12 +281,12 @@ export default function ReferenceDataManager() {
 
           {(["property_series", "property_developers", "property_areas"] as ReferenceType[]).map((type) => (
             <TabsContent key={type} value={type} className="space-y-4">
-              <div className="border rounded-lg">
+              <div className="border rounded-lg overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Название</TableHead>
-                      <TableHead className="w-[100px]">Действия</TableHead>
+                      <TableHead className="min-w-[150px]">Название</TableHead>
+                      <TableHead className="w-[100px] md:w-[120px]">Действия</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -303,24 +307,26 @@ export default function ReferenceDataManager() {
                         <TableRow key={item.id}>
                           <TableCell>{item.name}</TableCell>
                           <TableCell>
-                            <div className="flex gap-2">
+                            <div className="flex gap-1 md:gap-2">
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                className="h-8 w-8"
                                 onClick={() => {
                                   setEditItem(item);
                                   setNewItemName(item.name);
                                   setIsDialogOpen(true);
                                 }}
                               >
-                                <Pencil className="h-4 w-4" />
+                                <Pencil className="h-3 w-3 md:h-4 md:w-4" />
                               </Button>
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                className="h-8 w-8"
                                 onClick={() => handleDelete(item.id)}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                               </Button>
                             </div>
                           </TableCell>
