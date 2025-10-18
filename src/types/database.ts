@@ -43,6 +43,7 @@ export interface Property {
   property_condition_id?: string;
   property_status_id?: string;
   property_series?: string;
+  property_developer?: string;
   is_demo?: boolean;
   
   // Старые поля для обратной совместимости

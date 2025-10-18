@@ -69,6 +69,7 @@ export default function PropertyForm() {
     owner_name: '',
     owner_contacts: '',
     property_series: '',
+    property_developer: '',
   });
 
   const [selectedPaymentTypes, setSelectedPaymentTypes] = useState<string[]>([]);
@@ -133,6 +134,7 @@ export default function PropertyForm() {
           owner_name: data.owner_name || '',
           owner_contacts: data.owner_contacts || '',
           property_series: data.property_series || '',
+          property_developer: data.property_developer || '',
         });
 
         if (data.property_payment_types) {
@@ -333,6 +335,7 @@ export default function PropertyForm() {
         owner_name: formData.owner_name,
         owner_contacts: formData.owner_contacts,
         property_series: formData.property_series || null,
+        property_developer: formData.property_developer || null,
       };
 
       let propertyIdToUse: string;
@@ -546,17 +549,28 @@ export default function PropertyForm() {
                 </Select>
               </div>
 
-              {/* Поле "Серия" показывается только для квартир */}
+              {/* Поля "Серия" и "Застройщик" показываются только для квартир */}
               {propertyCategories.find(cat => cat.id === formData.property_category_id)?.code === 'apartment' && (
-                <div className="space-y-2">
-                  <Label htmlFor="property_series">Серия</Label>
-                  <Input
-                    id="property_series"
-                    value={formData.property_series}
-                    onChange={(e) => setFormData({ ...formData, property_series: e.target.value })}
-                    placeholder="Например: 105, 106, хрущевка"
-                  />
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="property_series">Серия</Label>
+                    <Input
+                      id="property_series"
+                      value={formData.property_series}
+                      onChange={(e) => setFormData({ ...formData, property_series: e.target.value })}
+                      placeholder="Например: 105, 106, хрущевка"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="property_developer">Застройщик</Label>
+                    <Input
+                      id="property_developer"
+                      value={formData.property_developer}
+                      onChange={(e) => setFormData({ ...formData, property_developer: e.target.value })}
+                      placeholder="Название застройщика"
+                    />
+                  </div>
+                </>
               )}
 
               <div className="space-y-2">

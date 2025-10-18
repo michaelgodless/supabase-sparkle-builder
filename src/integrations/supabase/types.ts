@@ -424,6 +424,7 @@ export type Database = {
           property_area_old: string | null
           property_category_id: string | null
           property_condition_id: string | null
+          property_developer: string | null
           property_floor_from_old: number | null
           property_floor_old: number | null
           property_lot_size: number | null
@@ -463,6 +464,7 @@ export type Database = {
           property_area_old?: string | null
           property_category_id?: string | null
           property_condition_id?: string | null
+          property_developer?: string | null
           property_floor_from_old?: number | null
           property_floor_old?: number | null
           property_lot_size?: number | null
@@ -502,6 +504,7 @@ export type Database = {
           property_area_old?: string | null
           property_category_id?: string | null
           property_condition_id?: string | null
+          property_developer?: string | null
           property_floor_from_old?: number | null
           property_floor_old?: number | null
           property_lot_size?: number | null
