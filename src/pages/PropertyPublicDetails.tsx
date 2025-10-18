@@ -92,9 +92,9 @@ const PropertyPublicDetails = () => {
   };
 
   const handleContactRequest = () => {
-    toast.success("Спасибо за интерес!", {
-      description: "Наш менеджер свяжется с вами в ближайшее время",
-    });
+    const message = `Хочу узнать подробнее об этом объекте: ${window.location.href}`;
+    const whatsappUrl = `https://wa.me/996503090699?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   if (loading) {
