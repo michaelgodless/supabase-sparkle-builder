@@ -27,6 +27,7 @@ import {
 } from '@/types/property';
 import { Badge } from '@/components/ui/badge';
 import { X, UserPlus } from 'lucide-react';
+import { SearchableSelect } from '@/components/SearchableSelect';
 
 export default function PropertyForm() {
   const navigate = useNavigate();
@@ -48,6 +49,8 @@ export default function PropertyForm() {
   const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
   const [communicationTypes, setCommunicationTypes] = useState<CommunicationType[]>([]);
   const [furnitureTypes, setFurnitureTypes] = useState<FurnitureType[]>([]);
+  const [seriesList, setSeriesList] = useState<{id: string, name: string}[]>([]);
+  const [developersList, setDevelopersList] = useState<{id: string, name: string}[]>([]);
 
   const floorOptions = generateFloorOptions();
 
@@ -261,6 +264,8 @@ export default function PropertyForm() {
         documentTypesRes,
         communicationTypesRes,
         furnitureTypesRes,
+        seriesRes,
+        developersRes,
       ] = await Promise.all([
         supabase.from('property_action_categories').select('*'),
         supabase.from('property_categories').select('*'),
@@ -271,6 +276,8 @@ export default function PropertyForm() {
         supabase.from('document_types').select('*'),
         supabase.from('communication_types').select('*'),
         supabase.from('furniture_types').select('*'),
+        supabase.from('property_series').select('*').order('name'),
+        supabase.from('property_developers').select('*').order('name'),
       ]);
 
       if (actionCategoriesRes.data) setActionCategories(actionCategoriesRes.data);
@@ -282,6 +289,8 @@ export default function PropertyForm() {
       if (documentTypesRes.data) setDocumentTypes(documentTypesRes.data);
       if (communicationTypesRes.data) setCommunicationTypes(communicationTypesRes.data);
       if (furnitureTypesRes.data) setFurnitureTypes(furnitureTypesRes.data);
+      if (seriesRes.data) setSeriesList(seriesRes.data);
+      if (developersRes.data) setDevelopersList(developersRes.data);
     } catch (error) {
       console.error('Error loading reference data:', error);
     } finally {
@@ -554,20 +563,30 @@ export default function PropertyForm() {
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="property_series">Серия</Label>
-                    <Input
-                      id="property_series"
-                      value={formData.property_series}
-                      onChange={(e) => setFormData({ ...formData, property_series: e.target.value })}
-                      placeholder="Например: 105, 106, хрущевка"
+                    <SearchableSelect
+                      options={seriesList}
+                      value={seriesList.find(s => s.name === formData.property_series)?.id || ''}
+                      onValueChange={(value) => {
+                        const series = seriesList.find(s => s.id === value);
+                        setFormData({ ...formData, property_series: series?.name || '' });
+                      }}
+                      placeholder="Выберите серию"
+                      searchPlaceholder="Поиск серии..."
+                      emptyText="Серия не найдена"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="property_developer">Застройщик</Label>
-                    <Input
-                      id="property_developer"
-                      value={formData.property_developer}
-                      onChange={(e) => setFormData({ ...formData, property_developer: e.target.value })}
-                      placeholder="Название застройщика"
+                    <SearchableSelect
+                      options={developersList}
+                      value={developersList.find(d => d.name === formData.property_developer)?.id || ''}
+                      onValueChange={(value) => {
+                        const developer = developersList.find(d => d.id === value);
+                        setFormData({ ...formData, property_developer: developer?.name || '' });
+                      }}
+                      placeholder="Выберите застройщика"
+                      searchPlaceholder="Поиск застройщика..."
+                      emptyText="Застройщик не найден"
                     />
                   </div>
                 </>
@@ -638,19 +657,14 @@ export default function PropertyForm() {
 
               <div className="space-y-2">
                 <Label htmlFor="property_floor_old">Этаж</Label>
-                <Select 
-                  value={formData.property_floor_old} 
+                <SearchableSelect
+                  options={floorOptions.map(opt => ({ id: opt.value, name: opt.label }))}
+                  value={formData.property_floor_old}
                   onValueChange={(value) => setFormData({ ...formData, property_floor_old: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Выберите этаж" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {floorOptions.map(option => (
-                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="Выберите этаж"
+                  searchPlaceholder="Поиск этажа..."
+                  emptyText="Этаж не найден"
+                />
               </div>
 
               <div className="space-y-2">
@@ -675,21 +689,14 @@ export default function PropertyForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="property_area_id">Район</Label>
-                <Select 
-                  value={formData.property_area_id} 
+                <SearchableSelect
+                  options={areas.map(area => ({ id: area.id, name: area.full_name || area.name }))}
+                  value={formData.property_area_id}
                   onValueChange={(value) => setFormData({ ...formData, property_area_id: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Выберите район" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {areas.map(area => (
-                      <SelectItem key={area.id} value={area.id}>
-                        {area.full_name || area.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="Выберите район"
+                  searchPlaceholder="Поиск района..."
+                  emptyText="Район не найден"
+                />
               </div>
 
               <div className="space-y-2">

@@ -1,4 +1,4 @@
-import { Home, Building2, Star, Calendar, FileText, Settings, Users, Activity, LogOut } from 'lucide-react';
+import { Home, Building2, Star, Calendar, FileText, Settings, Users, Activity, LogOut, Database } from 'lucide-react';
 import navigatorLogo from '@/assets/navigator-house-logo.png';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -53,6 +53,12 @@ const navItems: NavItem[] = [
     title: 'Управление',
     href: '/admin',
     icon: Users,
+    roles: ['super_admin'],
+  },
+  {
+    title: 'Справочники',
+    href: '/reference-data',
+    icon: Database,
     roles: ['super_admin'],
   },
   {

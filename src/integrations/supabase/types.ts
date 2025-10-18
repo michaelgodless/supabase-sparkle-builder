@@ -769,6 +769,24 @@ export type Database = {
         }
         Relationships: []
       }
+      property_developers: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       property_document_types: {
         Row: {
           created_at: string | null
@@ -952,6 +970,24 @@ export type Database = {
         }
         Update: {
           code?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      property_series: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
           created_at?: string | null
           id?: string
           name?: string

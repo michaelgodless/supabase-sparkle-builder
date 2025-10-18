@@ -19,6 +19,7 @@ import NewBuildings from "@/pages/NewBuildings";
 import Docs from "@/pages/Docs";
 import Admin from "@/pages/Admin";
 import Audit from "@/pages/Audit";
+import ReferenceDataManager from "@/pages/ReferenceDataManager";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
 
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="/docs" element={<Docs />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/audit" element={<Audit />} />
+              <Route path="/reference-data" element={<ReferenceDataManager />} />
               <Route path="/profile" element={<Profile />} />
             </Route>
             <Route path="*" element={<NotFound />} />
