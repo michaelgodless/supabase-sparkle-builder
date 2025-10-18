@@ -176,9 +176,22 @@ export default function ReferenceDataManager() {
         
         if (fetchError) throw fetchError;
         
-        // Фильтруем только новые имена
+        // Фильтруем только новые имена и убираем дубликаты из самого файла
         const existingNames = new Set(existing?.map(item => item.name.toLowerCase()) || []);
-        const newNames = names.filter(name => !existingNames.has(name.toLowerCase()));
+        
+        // Создаем Map для сохранения оригинального регистра имен
+        const uniqueNamesMap = new Map<string, string>();
+        names.forEach(name => {
+          const lowerName = name.toLowerCase();
+          if (!uniqueNamesMap.has(lowerName)) {
+            uniqueNamesMap.set(lowerName, name);
+          }
+        });
+        
+        // Фильтруем новые имена, сохраняя оригинальный регистр
+        const newNames = Array.from(uniqueNamesMap.entries())
+          .filter(([lowerName]) => !existingNames.has(lowerName))
+          .map(([, originalName]) => originalName);
         
         if (newNames.length === 0) {
           toast({
