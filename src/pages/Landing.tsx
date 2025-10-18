@@ -84,7 +84,7 @@ const Landing = () => {
             }} whileTap={{
               scale: 0.95
             }}>
-                <Button size="lg" onClick={() => navigate('/properties')} className="text-white px-6 md:px-8 py-5 md:py-6 text-base md:text-lg shadow-lg hover:shadow-xl transition-all w-full sm:w-auto bg-yellow-700 hover:bg-yellow-600">
+                <Button size="lg" onClick={() => navigate('/properties')} className="text-white px-6 md:px-8 py-5 md:py-6 text-base md:text-lg shadow-lg hover:shadow-xl transition-all w-full sm:w-auto bg-yellow-600 hover:bg-yellow-500">
                   Смотреть объекты
                   <ArrowRight className="ml-2 h-4 md:h-5 w-4 md:w-5" />
                 </Button>
