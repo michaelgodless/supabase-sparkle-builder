@@ -136,6 +136,12 @@ export function FeaturedPropertiesGrid() {
               </Card>;
         })}
         </div>
+
+        <div className="flex justify-center mt-8">
+          <Button size="lg" onClick={() => navigate('/properties')} className="px-8 py-6 text-lg bg-yellow-600 hover:bg-yellow-500 text-white">
+            Еще больше
+          </Button>
+        </div>
       </div>
     </section>;
 }
