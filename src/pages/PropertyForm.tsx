@@ -1,20 +1,20 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Save, Upload } from 'lucide-react';
-import PhotoPreview from '@/components/PhotoPreview';
-import { 
-  PropertyActionCategory, 
-  PropertyCategory, 
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/hooks/use-toast";
+import { ArrowLeft, Save, Upload } from "lucide-react";
+import PhotoPreview from "@/components/PhotoPreview";
+import {
+  PropertyActionCategory,
+  PropertyCategory,
   PropertyArea,
   PropertyProposal,
   PropertyCondition,
@@ -23,11 +23,11 @@ import {
   CommunicationType,
   FurnitureType,
   ROOM_OPTIONS,
-  generateFloorOptions
-} from '@/types/property';
-import { Badge } from '@/components/ui/badge';
-import { X, UserPlus } from 'lucide-react';
-import { SearchableSelect } from '@/components/SearchableSelect';
+  generateFloorOptions,
+} from "@/types/property";
+import { Badge } from "@/components/ui/badge";
+import { X, UserPlus } from "lucide-react";
+import { SearchableSelect } from "@/components/SearchableSelect";
 
 export default function PropertyForm() {
   const navigate = useNavigate();
@@ -36,7 +36,7 @@ export default function PropertyForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
-  
+
   const isEditMode = !!propertyId;
 
   // Справочники
@@ -49,31 +49,31 @@ export default function PropertyForm() {
   const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
   const [communicationTypes, setCommunicationTypes] = useState<CommunicationType[]>([]);
   const [furnitureTypes, setFurnitureTypes] = useState<FurnitureType[]>([]);
-  const [seriesList, setSeriesList] = useState<{id: string, name: string}[]>([]);
-  const [developersList, setDevelopersList] = useState<{id: string, name: string}[]>([]);
+  const [seriesList, setSeriesList] = useState<{ id: string; name: string }[]>([]);
+  const [developersList, setDevelopersList] = useState<{ id: string; name: string }[]>([]);
 
   const floorOptions = generateFloorOptions();
 
   const [formData, setFormData] = useState({
-    property_action_category_id: '',
-    property_category_id: '',
-    property_rooms: '',
-    property_size: '',
-    property_lot_size: '',
-    property_area_id: '',
-    property_proposal_id: '',
-    property_condition_id: '',
-    property_floor_old: '',
-    property_floor_from_old: '',
-    address: '',
-    price: '',
-    price_in_hand: '',
-    currency: 'USD',
-    description: '',
-    owner_name: '',
-    owner_contacts: '',
-    property_series: '',
-    property_developer: '',
+    property_action_category_id: "",
+    property_category_id: "",
+    property_rooms: "",
+    property_size: "",
+    property_lot_size: "",
+    property_area_id: "",
+    property_proposal_id: "",
+    property_condition_id: "",
+    property_floor_old: "",
+    property_floor_from_old: "",
+    address: "",
+    price: "",
+    price_in_hand: "",
+    currency: "USD",
+    description: "",
+    owner_name: "",
+    owner_contacts: "",
+    property_series: "",
+    property_developer: "",
   });
 
   const [selectedPaymentTypes, setSelectedPaymentTypes] = useState<string[]>([]);
@@ -81,11 +81,11 @@ export default function PropertyForm() {
   const [selectedCommunications, setSelectedCommunications] = useState<string[]>([]);
   const [selectedFurniture, setSelectedFurniture] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
-  
+
   // Collaborators state
   const [collaborators, setCollaborators] = useState<any[]>([]);
   const [availableManagers, setAvailableManagers] = useState<any[]>([]);
-  const [selectedCollaborator, setSelectedCollaborator] = useState('');
+  const [selectedCollaborator, setSelectedCollaborator] = useState("");
 
   // Загрузка справочников
   useEffect(() => {
@@ -105,41 +105,43 @@ export default function PropertyForm() {
     try {
       setLoadingData(true);
       const { data, error } = await supabase
-        .from('properties')
-        .select(`
+        .from("properties")
+        .select(
+          `
           *,
           property_payment_types(payment_type_id),
           property_document_types(document_type_id),
           property_communication_types(communication_type_id),
           property_furniture_types(furniture_type_id),
           property_photos(id, photo_url, display_order)
-        `)
-        .eq('id', id)
+        `,
+        )
+        .eq("id", id)
         .single();
 
       if (error) throw error;
 
       if (data) {
         setFormData({
-          property_action_category_id: data.property_action_category_id || '',
-          property_category_id: data.property_category_id || '',
-          property_rooms: data.property_rooms || '',
-          property_size: data.property_size?.toString() || '',
-          property_lot_size: data.property_lot_size?.toString() || '',
-          property_area_id: data.property_area_id || '',
-          property_proposal_id: data.property_proposal_id || '',
-          property_condition_id: data.property_condition_id || '',
-          property_floor_old: data.property_floor_old?.toString() || '',
-          property_floor_from_old: data.property_floor_from_old?.toString() || '',
-          address: data.address || '',
-          price: data.price?.toString() || '',
-          price_in_hand: data.price_in_hand?.toString() || '',
-          currency: data.currency || 'USD',
-          description: data.description || '',
-          owner_name: data.owner_name || '',
-          owner_contacts: data.owner_contacts || '',
-          property_series: data.property_series || '',
-          property_developer: data.property_developer || '',
+          property_action_category_id: data.property_action_category_id || "",
+          property_category_id: data.property_category_id || "",
+          property_rooms: data.property_rooms || "",
+          property_size: data.property_size?.toString() || "",
+          property_lot_size: data.property_lot_size?.toString() || "",
+          property_area_id: data.property_area_id || "",
+          property_proposal_id: data.property_proposal_id || "",
+          property_condition_id: data.property_condition_id || "",
+          property_floor_old: data.property_floor_old?.toString() || "",
+          property_floor_from_old: data.property_floor_from_old?.toString() || "",
+          address: data.address || "",
+          price: data.price?.toString() || "",
+          price_in_hand: data.price_in_hand?.toString() || "",
+          currency: data.currency || "USD",
+          description: data.description || "",
+          owner_name: data.owner_name || "",
+          owner_contacts: data.owner_contacts || "",
+          property_series: data.property_series || "",
+          property_developer: data.property_developer || "",
         });
 
         if (data.property_payment_types) {
@@ -156,13 +158,13 @@ export default function PropertyForm() {
         }
       }
     } catch (error) {
-      console.error('Error loading property:', error);
+      console.error("Error loading property:", error);
       toast({
-        variant: 'destructive',
-        title: 'Ошибка',
-        description: 'Не удалось загрузить данные объявления',
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Не удалось загрузить данные объявления",
       });
-      navigate('/my-properties');
+      navigate("/my-properties");
     } finally {
       setLoadingData(false);
     }
@@ -171,32 +173,34 @@ export default function PropertyForm() {
   const loadAvailableManagers = async () => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name, email')
-        .neq('id', user?.id || '');
-      
+        .from("profiles")
+        .select("id, full_name, email")
+        .neq("id", user?.id || "");
+
       if (error) throw error;
       if (data) setAvailableManagers(data);
     } catch (error) {
-      console.error('Error loading managers:', error);
+      console.error("Error loading managers:", error);
     }
   };
 
   const loadCollaborators = async (propertyId: string) => {
     try {
       const { data, error } = await supabase
-        .from('property_collaborators')
-        .select(`
+        .from("property_collaborators")
+        .select(
+          `
           id,
           user_id,
           profiles:user_id (id, full_name, email)
-        `)
-        .eq('property_id', propertyId);
-      
+        `,
+        )
+        .eq("property_id", propertyId);
+
       if (error) throw error;
       if (data) setCollaborators(data);
     } catch (error) {
-      console.error('Error loading collaborators:', error);
+      console.error("Error loading collaborators:", error);
     }
   };
 
@@ -204,27 +208,25 @@ export default function PropertyForm() {
     if (!selectedCollaborator || !propertyId) return;
 
     try {
-      const { error } = await supabase
-        .from('property_collaborators')
-        .insert({
-          property_id: propertyId,
-          user_id: selectedCollaborator,
-          added_by: user?.id
-        });
+      const { error } = await supabase.from("property_collaborators").insert({
+        property_id: propertyId,
+        user_id: selectedCollaborator,
+        added_by: user?.id,
+      });
 
       if (error) throw error;
 
       toast({
-        title: 'Успешно',
-        description: 'Договорник добавлен',
+        title: "Успешно",
+        description: "Договорник добавлен",
       });
 
       loadCollaborators(propertyId);
-      setSelectedCollaborator('');
+      setSelectedCollaborator("");
     } catch (error: any) {
       toast({
-        variant: 'destructive',
-        title: 'Ошибка',
+        variant: "destructive",
+        title: "Ошибка",
         description: error.message,
       });
     }
@@ -232,23 +234,20 @@ export default function PropertyForm() {
 
   const handleRemoveCollaborator = async (collaboratorId: string) => {
     try {
-      const { error } = await supabase
-        .from('property_collaborators')
-        .delete()
-        .eq('id', collaboratorId);
+      const { error } = await supabase.from("property_collaborators").delete().eq("id", collaboratorId);
 
       if (error) throw error;
 
       toast({
-        title: 'Успешно',
-        description: 'Договорник удален',
+        title: "Успешно",
+        description: "Договорник удален",
       });
 
       loadCollaborators(propertyId!);
     } catch (error: any) {
       toast({
-        variant: 'destructive',
-        title: 'Ошибка',
+        variant: "destructive",
+        title: "Ошибка",
         description: error.message,
       });
     }
@@ -269,17 +268,17 @@ export default function PropertyForm() {
         seriesRes,
         developersRes,
       ] = await Promise.all([
-        supabase.from('property_action_categories').select('*'),
-        supabase.from('property_categories').select('*'),
-        supabase.from('property_areas').select('*').order('name'),
-        supabase.from('property_proposals').select('*'),
-        supabase.from('property_conditions').select('*'),
-        supabase.from('payment_types').select('*'),
-        supabase.from('document_types').select('*'),
-        supabase.from('communication_types').select('*'),
-        supabase.from('furniture_types').select('*'),
-        supabase.from('property_series').select('*').order('name'),
-        supabase.from('property_developers').select('*').order('name'),
+        supabase.from("property_action_categories").select("*"),
+        supabase.from("property_categories").select("*"),
+        supabase.from("property_areas").select("*").order("name"),
+        supabase.from("property_proposals").select("*"),
+        supabase.from("property_conditions").select("*"),
+        supabase.from("payment_types").select("*"),
+        supabase.from("document_types").select("*"),
+        supabase.from("communication_types").select("*"),
+        supabase.from("furniture_types").select("*"),
+        supabase.from("property_series").select("*").order("name"),
+        supabase.from("property_developers").select("*").order("name"),
       ]);
 
       if (actionCategoriesRes.data) setActionCategories(actionCategoriesRes.data);
@@ -294,7 +293,7 @@ export default function PropertyForm() {
       if (seriesRes.data) setSeriesList(seriesRes.data);
       if (developersRes.data) setDevelopersList(developersRes.data);
     } catch (error) {
-      console.error('Error loading reference data:', error);
+      console.error("Error loading reference data:", error);
     } finally {
       setLoadingData(false);
     }
@@ -305,13 +304,20 @@ export default function PropertyForm() {
     if (!user) return;
 
     // Клиентская валидация
-    if (!formData.property_action_category_id || !formData.property_category_id || 
-        !formData.property_proposal_id || !formData.property_size || 
-        !formData.address || !formData.price || !formData.owner_name || !formData.owner_contacts) {
+    if (
+      !formData.property_action_category_id ||
+      !formData.property_category_id ||
+      !formData.property_proposal_id ||
+      !formData.property_size ||
+      !formData.address ||
+      !formData.price ||
+      !formData.owner_name ||
+      !formData.owner_contacts
+    ) {
       toast({
-        variant: 'destructive',
-        title: 'Ошибка',
-        description: 'Заполните все обязательные поля',
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Заполните все обязательные поля",
       });
       return;
     }
@@ -319,9 +325,9 @@ export default function PropertyForm() {
     // Проверка фотографий только для новых объявлений
     if (!isEditMode && selectedImages.length === 0) {
       toast({
-        variant: 'destructive',
-        title: 'Ошибка',
-        description: 'Добавьте хотя бы одну фотографию',
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Добавьте хотя бы одну фотографию",
       });
       return;
     }
@@ -354,84 +360,79 @@ export default function PropertyForm() {
 
       if (isEditMode && propertyId) {
         // Обновление существующего объявления
-        const { error: updateError } = await supabase
-          .from('properties')
-          .update(propertyData)
-          .eq('id', propertyId);
+        const { error: updateError } = await supabase.from("properties").update(propertyData).eq("id", propertyId);
 
         if (updateError) throw updateError;
         propertyIdToUse = propertyId;
 
         // Удаление старых связей
         await Promise.all([
-          supabase.from('property_payment_types').delete().eq('property_id', propertyId),
-          supabase.from('property_document_types').delete().eq('property_id', propertyId),
-          supabase.from('property_communication_types').delete().eq('property_id', propertyId),
-          supabase.from('property_furniture_types').delete().eq('property_id', propertyId),
+          supabase.from("property_payment_types").delete().eq("property_id", propertyId),
+          supabase.from("property_document_types").delete().eq("property_id", propertyId),
+          supabase.from("property_communication_types").delete().eq("property_id", propertyId),
+          supabase.from("property_furniture_types").delete().eq("property_id", propertyId),
         ]);
       } else {
         // Создание нового объявления
         const { data: property, error: propertyError } = await supabase
-          .from('properties')
+          .from("properties")
           .insert({
             ...propertyData,
             created_by: user.id,
-            status: 'no_ads' as const,
+            status: "no_ads" as const,
           } as any)
           .select()
           .single();
 
         if (propertyError) throw propertyError;
-        if (!property) throw new Error('Property not created');
+        if (!property) throw new Error("Property not created");
         propertyIdToUse = property.id;
       }
 
       // Добавление связей для множественных выборов
       if (selectedPaymentTypes.length > 0) {
-        await supabase.from('property_payment_types').insert(
-          selectedPaymentTypes.map(id => ({ property_id: propertyIdToUse, payment_type_id: id }))
-        );
+        await supabase
+          .from("property_payment_types")
+          .insert(selectedPaymentTypes.map((id) => ({ property_id: propertyIdToUse, payment_type_id: id })));
       }
 
       if (selectedDocuments.length > 0) {
-        await supabase.from('property_document_types').insert(
-          selectedDocuments.map(id => ({ property_id: propertyIdToUse, document_type_id: id }))
-        );
+        await supabase
+          .from("property_document_types")
+          .insert(selectedDocuments.map((id) => ({ property_id: propertyIdToUse, document_type_id: id })));
       }
 
       if (selectedCommunications.length > 0) {
-        await supabase.from('property_communication_types').insert(
-          selectedCommunications.map(id => ({ property_id: propertyIdToUse, communication_type_id: id }))
-        );
+        await supabase
+          .from("property_communication_types")
+          .insert(selectedCommunications.map((id) => ({ property_id: propertyIdToUse, communication_type_id: id })));
       }
 
       if (selectedFurniture.length > 0) {
-        await supabase.from('property_furniture_types').insert(
-          selectedFurniture.map(id => ({ property_id: propertyIdToUse, furniture_type_id: id }))
-        );
+        await supabase
+          .from("property_furniture_types")
+          .insert(selectedFurniture.map((id) => ({ property_id: propertyIdToUse, furniture_type_id: id })));
       }
 
       // Загрузка новых изображений
       if (selectedImages.length > 0) {
         for (let i = 0; i < selectedImages.length; i++) {
           const file = selectedImages[i];
-          const fileExt = file.name.split('.').pop();
+          const fileExt = file.name.split(".").pop();
           const fileName = `${user.id}/${propertyIdToUse}/${Date.now()}_${i}.${fileExt}`;
-          
-          const { error: uploadError } = await supabase.storage
-            .from('property-photos')
-            .upload(fileName, file);
+
+          const { error: uploadError } = await supabase.storage.from("property-photos").upload(fileName, file);
 
           if (uploadError) {
-            console.error('Image upload error:', uploadError);
+            console.error("Image upload error:", uploadError);
             continue;
           }
 
-          const { data: { publicUrl } } = supabase.storage
-            .from('property-photos')
-            .getPublicUrl(fileName);
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from("property-photos").getPublicUrl(fileName);
 
-          await supabase.from('property_photos').insert({
+          await supabase.from("property_photos").insert({
             property_id: propertyIdToUse,
             photo_url: publicUrl,
             display_order: i,
@@ -440,16 +441,16 @@ export default function PropertyForm() {
       }
 
       toast({
-        title: 'Успешно',
-        description: isEditMode ? 'Объявление обновлено' : 'Объявление создано',
+        title: "Успешно",
+        description: isEditMode ? "Объявление обновлено" : "Объявление создано",
       });
 
-      navigate(isEditMode ? `/properties/${propertyId}` : '/my-properties');
+      navigate(isEditMode ? `/properties/${propertyId}` : "/my-properties");
     } catch (error: any) {
-      console.error('Property operation error:', error);
+      console.error("Property operation error:", error);
       toast({
-        variant: 'destructive',
-        title: 'Ошибка',
+        variant: "destructive",
+        title: "Ошибка",
         description: error.message,
       });
     } finally {
@@ -461,9 +462,9 @@ export default function PropertyForm() {
     const files = Array.from(e.target.files || []);
     if (files.length + selectedImages.length > 20) {
       toast({
-        variant: 'destructive',
-        title: 'Ошибка',
-        description: 'Максимум 20 фотографий',
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Максимум 20 фотографий",
       });
       return;
     }
@@ -482,15 +483,17 @@ export default function PropertyForm() {
   };
 
   // Условная логика: показывать поле площади участка только для домов и участков
-  const showLotSize = formData.property_category_id && 
-    propertyCategories.find(c => c.id === formData.property_category_id)?.code === 'houses_land';
+  const showLotSize =
+    formData.property_category_id &&
+    propertyCategories.find((c) => c.id === formData.property_category_id)?.code === "houses_land";
 
   // Условная логика: скрывать документы для аренды
-  const showDocuments = actionCategories.find(c => c.id === formData.property_action_category_id)?.code !== 'rent';
+  const showDocuments = actionCategories.find((c) => c.id === formData.property_action_category_id)?.code !== "rent";
 
   // Условная логика: скрывать коммуникации и мебель для участков
-  const showCommunications = formData.property_category_id && 
-    propertyCategories.find(c => c.id === formData.property_category_id)?.code !== 'land';
+  const showCommunications =
+    formData.property_category_id &&
+    propertyCategories.find((c) => c.id === formData.property_category_id)?.code !== "land";
 
   if (loadingData) {
     return (
@@ -503,15 +506,15 @@ export default function PropertyForm() {
   return (
     <div className="p-8 space-y-8">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/my-properties')}>
+        <Button variant="ghost" size="icon" onClick={() => navigate("/my-properties")}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
           <h1 className="text-4xl font-bold text-foreground mb-2">
-            {isEditMode ? 'Редактировать объявление' : 'Создать объявление'}
+            {isEditMode ? "Редактировать объявление" : "Создать объявление"}
           </h1>
           <p className="text-muted-foreground text-lg">
-            {isEditMode ? 'Изменение объекта недвижимости' : 'Добавление нового объекта недвижимости'}
+            {isEditMode ? "Изменение объекта недвижимости" : "Добавление нового объекта недвижимости"}
           </p>
         </div>
       </div>
@@ -527,8 +530,8 @@ export default function PropertyForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="property_action_category_id">Тип сделки *</Label>
-                <Select 
-                  value={formData.property_action_category_id} 
+                <Select
+                  value={formData.property_action_category_id}
                   onValueChange={(value) => setFormData({ ...formData, property_action_category_id: value })}
                   required
                 >
@@ -536,8 +539,10 @@ export default function PropertyForm() {
                     <SelectValue placeholder="Выберите тип" />
                   </SelectTrigger>
                   <SelectContent>
-                    {actionCategories.map(cat => (
-                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                    {actionCategories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -545,8 +550,8 @@ export default function PropertyForm() {
 
               <div className="space-y-2">
                 <Label htmlFor="property_category_id">Тип недвижимости *</Label>
-                <Select 
-                  value={formData.property_category_id} 
+                <Select
+                  value={formData.property_category_id}
                   onValueChange={(value) => setFormData({ ...formData, property_category_id: value })}
                   required
                 >
@@ -554,24 +559,26 @@ export default function PropertyForm() {
                     <SelectValue placeholder="Выберите тип" />
                   </SelectTrigger>
                   <SelectContent>
-                    {propertyCategories.map(cat => (
-                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                    {propertyCategories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Поля "Серия" и "Застройщик" показываются только для квартир */}
-              {propertyCategories.find(cat => cat.id === formData.property_category_id)?.code === 'apartment' && (
+              {propertyCategories.find((cat) => cat.id === formData.property_category_id)?.code === "apartment" && (
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="property_series">Серия</Label>
                     <SearchableSelect
                       options={seriesList}
-                      value={seriesList.find(s => s.name === formData.property_series)?.id || ''}
+                      value={seriesList.find((s) => s.name === formData.property_series)?.id || ""}
                       onValueChange={(value) => {
-                        const series = seriesList.find(s => s.id === value);
-                        setFormData({ ...formData, property_series: series?.name || '' });
+                        const series = seriesList.find((s) => s.id === value);
+                        setFormData({ ...formData, property_series: series?.name || "" });
                       }}
                       placeholder="Выберите серию"
                       searchPlaceholder="Поиск серии..."
@@ -579,17 +586,17 @@ export default function PropertyForm() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="property_developer">Застройщик</Label>
+                    <Label htmlFor="property_developer">Жилой комплекс</Label>
                     <SearchableSelect
                       options={developersList}
-                      value={developersList.find(d => d.name === formData.property_developer)?.id || ''}
+                      value={developersList.find((d) => d.name === formData.property_developer)?.id || ""}
                       onValueChange={(value) => {
-                        const developer = developersList.find(d => d.id === value);
-                        setFormData({ ...formData, property_developer: developer?.name || '' });
+                        const developer = developersList.find((d) => d.id === value);
+                        setFormData({ ...formData, property_developer: developer?.name || "" });
                       }}
-                      placeholder="Выберите застройщика"
-                      searchPlaceholder="Поиск застройщика..."
-                      emptyText="Застройщик не найден"
+                      placeholder="Выберите ЖК"
+                      searchPlaceholder="Поиск ЖК..."
+                      emptyText="Жк не найден"
                     />
                   </div>
                 </>
@@ -597,16 +604,18 @@ export default function PropertyForm() {
 
               <div className="space-y-2">
                 <Label htmlFor="property_rooms">Количество комнат</Label>
-                <Select 
-                  value={formData.property_rooms} 
+                <Select
+                  value={formData.property_rooms}
                   onValueChange={(value) => setFormData({ ...formData, property_rooms: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Выберите" />
                   </SelectTrigger>
                   <SelectContent>
-                    {ROOM_OPTIONS.map(option => (
-                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    {ROOM_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -614,8 +623,8 @@ export default function PropertyForm() {
 
               <div className="space-y-2">
                 <Label htmlFor="property_proposal_id">Тип предложения *</Label>
-                <Select 
-                  value={formData.property_proposal_id} 
+                <Select
+                  value={formData.property_proposal_id}
                   onValueChange={(value) => setFormData({ ...formData, property_proposal_id: value })}
                   required
                 >
@@ -623,8 +632,10 @@ export default function PropertyForm() {
                     <SelectValue placeholder="Выберите" />
                   </SelectTrigger>
                   <SelectContent>
-                    {proposals.map(prop => (
-                      <SelectItem key={prop.id} value={prop.id}>{prop.name}</SelectItem>
+                    {proposals.map((prop) => (
+                      <SelectItem key={prop.id} value={prop.id}>
+                        {prop.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -661,7 +672,7 @@ export default function PropertyForm() {
               <div className="space-y-2">
                 <Label htmlFor="property_floor_old">Этаж</Label>
                 <SearchableSelect
-                  options={floorOptions.map(opt => ({ id: opt.value, name: opt.label }))}
+                  options={floorOptions.map((opt) => ({ id: opt.value, name: opt.label }))}
                   value={formData.property_floor_old}
                   onValueChange={(value) => setFormData({ ...formData, property_floor_old: value })}
                   placeholder="Выберите этаж"
@@ -672,16 +683,18 @@ export default function PropertyForm() {
 
               <div className="space-y-2">
                 <Label htmlFor="property_floor_from_old">Этажность</Label>
-                <Select 
-                  value={formData.property_floor_from_old} 
+                <Select
+                  value={formData.property_floor_from_old}
                   onValueChange={(value) => setFormData({ ...formData, property_floor_from_old: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Выберите" />
                   </SelectTrigger>
                   <SelectContent>
-                    {floorOptions.map(option => (
-                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    {floorOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -693,7 +706,7 @@ export default function PropertyForm() {
               <div className="space-y-2">
                 <Label htmlFor="property_area_id">Район</Label>
                 <SearchableSelect
-                  options={areas.map(area => ({ id: area.id, name: area.full_name || area.name }))}
+                  options={areas.map((area) => ({ id: area.id, name: area.full_name || area.name }))}
                   value={formData.property_area_id}
                   onValueChange={(value) => setFormData({ ...formData, property_area_id: value })}
                   placeholder="Выберите район"
@@ -728,7 +741,7 @@ export default function PropertyForm() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="price_in_hand">Цена на руку</Label>
+                <Label htmlFor="price_in_hand">Цена на руки</Label>
                 <Input
                   id="price_in_hand"
                   type="number"
@@ -740,8 +753,8 @@ export default function PropertyForm() {
 
               <div className="space-y-2">
                 <Label htmlFor="currency">Валюта</Label>
-                <Select 
-                  value={formData.currency} 
+                <Select
+                  value={formData.currency}
                   onValueChange={(value) => setFormData({ ...formData, currency: value })}
                 >
                   <SelectTrigger>
@@ -759,16 +772,18 @@ export default function PropertyForm() {
             {/* Группа 5: Состояние */}
             <div className="space-y-2">
               <Label htmlFor="property_condition_id">Состояние</Label>
-              <Select 
-                value={formData.property_condition_id} 
+              <Select
+                value={formData.property_condition_id}
                 onValueChange={(value) => setFormData({ ...formData, property_condition_id: value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Выберите состояние" />
                 </SelectTrigger>
                 <SelectContent>
-                  {conditions.map(cond => (
-                    <SelectItem key={cond.id} value={cond.id}>{cond.name}</SelectItem>
+                  {conditions.map((cond) => (
+                    <SelectItem key={cond.id} value={cond.id}>
+                      {cond.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -779,7 +794,7 @@ export default function PropertyForm() {
               <div className="space-y-2">
                 <Label>Вид платежа</Label>
                 <div className="grid grid-cols-2 gap-2">
-                  {paymentTypes.map(type => (
+                  {paymentTypes.map((type) => (
                     <div key={type.id} className="flex items-center space-x-2">
                       <Checkbox
                         id={`payment-${type.id}`}
@@ -788,7 +803,7 @@ export default function PropertyForm() {
                           if (checked) {
                             setSelectedPaymentTypes([...selectedPaymentTypes, type.id]);
                           } else {
-                            setSelectedPaymentTypes(selectedPaymentTypes.filter(id => id !== type.id));
+                            setSelectedPaymentTypes(selectedPaymentTypes.filter((id) => id !== type.id));
                           }
                         }}
                       />
@@ -804,7 +819,7 @@ export default function PropertyForm() {
                 <div className="space-y-2">
                   <Label>Документы</Label>
                   <div className="grid grid-cols-2 gap-2">
-                    {documentTypes.map(type => (
+                    {documentTypes.map((type) => (
                       <div key={type.id} className="flex items-center space-x-2">
                         <Checkbox
                           id={`doc-${type.id}`}
@@ -813,7 +828,7 @@ export default function PropertyForm() {
                             if (checked) {
                               setSelectedDocuments([...selectedDocuments, type.id]);
                             } else {
-                              setSelectedDocuments(selectedDocuments.filter(id => id !== type.id));
+                              setSelectedDocuments(selectedDocuments.filter((id) => id !== type.id));
                             }
                           }}
                         />
@@ -831,7 +846,7 @@ export default function PropertyForm() {
                   <div className="space-y-2">
                     <Label>Коммуникации</Label>
                     <div className="grid grid-cols-2 gap-2">
-                      {communicationTypes.map(type => (
+                      {communicationTypes.map((type) => (
                         <div key={type.id} className="flex items-center space-x-2">
                           <Checkbox
                             id={`comm-${type.id}`}
@@ -840,7 +855,7 @@ export default function PropertyForm() {
                               if (checked) {
                                 setSelectedCommunications([...selectedCommunications, type.id]);
                               } else {
-                                setSelectedCommunications(selectedCommunications.filter(id => id !== type.id));
+                                setSelectedCommunications(selectedCommunications.filter((id) => id !== type.id));
                               }
                             }}
                           />
@@ -855,7 +870,7 @@ export default function PropertyForm() {
                   <div className="space-y-2">
                     <Label>Мебель</Label>
                     <div className="grid grid-cols-2 gap-2">
-                      {furnitureTypes.map(type => (
+                      {furnitureTypes.map((type) => (
                         <div key={type.id} className="flex items-center space-x-2">
                           <Checkbox
                             id={`furn-${type.id}`}
@@ -864,7 +879,7 @@ export default function PropertyForm() {
                               if (checked) {
                                 setSelectedFurniture([...selectedFurniture, type.id]);
                               } else {
-                                setSelectedFurniture(selectedFurniture.filter(id => id !== type.id));
+                                setSelectedFurniture(selectedFurniture.filter((id) => id !== type.id));
                               }
                             }}
                           />
@@ -903,7 +918,7 @@ export default function PropertyForm() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => document.getElementById('images')?.click()}
+                  onClick={() => document.getElementById("images")?.click()}
                   disabled={selectedImages.length >= 20}
                 >
                   <Upload className="h-4 w-4 mr-2" />
@@ -918,16 +933,10 @@ export default function PropertyForm() {
                   onChange={handleImageSelection}
                 />
                 {selectedImages.length > 0 && (
-                  <span className="text-sm text-muted-foreground">
-                    Загружено: {selectedImages.length}/20
-                  </span>
+                  <span className="text-sm text-muted-foreground">Загружено: {selectedImages.length}/20</span>
                 )}
               </div>
-              <PhotoPreview 
-                files={selectedImages}
-                onRemove={handleRemoveImage}
-                onReorder={handleReorderImages}
-              />
+              <PhotoPreview files={selectedImages} onRemove={handleRemoveImage} onReorder={handleReorderImages} />
             </div>
 
             {/* Группа 9: Контакты собственника */}
@@ -963,11 +972,14 @@ export default function PropertyForm() {
                     Добавленные менеджеры получат те же права что и автор объявления
                   </p>
                 </div>
-                
+
                 {collaborators.length > 0 && (
                   <div className="space-y-2">
                     {collaborators.map((collab) => (
-                      <div key={collab.id} className="flex items-center justify-between p-2 bg-background rounded border">
+                      <div
+                        key={collab.id}
+                        className="flex items-center justify-between p-2 bg-background rounded border"
+                      >
                         <div className="flex items-center gap-2">
                           <Badge variant="secondary">{collab.profiles?.full_name}</Badge>
                           <span className="text-sm text-muted-foreground">{collab.profiles?.email}</span>
@@ -992,19 +1004,15 @@ export default function PropertyForm() {
                     </SelectTrigger>
                     <SelectContent>
                       {availableManagers
-                        .filter(m => !collaborators.some(c => c.user_id === m.id))
-                        .map(manager => (
+                        .filter((m) => !collaborators.some((c) => c.user_id === m.id))
+                        .map((manager) => (
                           <SelectItem key={manager.id} value={manager.id}>
                             {manager.full_name} ({manager.email})
                           </SelectItem>
                         ))}
                     </SelectContent>
                   </Select>
-                  <Button
-                    type="button"
-                    onClick={handleAddCollaborator}
-                    disabled={!selectedCollaborator}
-                  >
+                  <Button type="button" onClick={handleAddCollaborator} disabled={!selectedCollaborator}>
                     <UserPlus className="h-4 w-4 mr-2" />
                     Добавить
                   </Button>
@@ -1015,9 +1023,9 @@ export default function PropertyForm() {
             <div className="flex gap-4 pt-4">
               <Button type="submit" disabled={loading} className="bg-gradient-primary">
                 <Save className="h-4 w-4 mr-2" />
-                {loading ? 'Сохранение...' : 'Сохранить объявление'}
+                {loading ? "Сохранение..." : "Сохранить объявление"}
               </Button>
-              <Button type="button" variant="outline" onClick={() => navigate('/my-properties')}>
+              <Button type="button" variant="outline" onClick={() => navigate("/my-properties")}>
                 Отмена
               </Button>
             </div>
