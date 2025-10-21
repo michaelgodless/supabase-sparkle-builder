@@ -71,7 +71,7 @@ export default function Viewings() {
           )
         `)
         .eq('assigned_by', user?.id)
-        .order('scheduled_at', { ascending: true });
+        .order('created_at', { ascending: false });
 
       if (filter !== 'all') {
         query = query.eq('status', filter);
