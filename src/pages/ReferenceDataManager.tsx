@@ -31,9 +31,11 @@ export default function ReferenceDataManager() {
   const [editItem, setEditItem] = useState<ReferenceItem | null>(null);
   const [newItemName, setNewItemName] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchItems(activeTab);
+    setSearchQuery("");
   }, [activeTab]);
 
   const fetchItems = async (type: ReferenceType) => {
@@ -205,6 +207,10 @@ export default function ReferenceDataManager() {
     event.target.value = "";
   };
 
+  const filteredItems = items.filter((item) =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-4 px-4 md:py-8">
@@ -213,8 +219,9 @@ export default function ReferenceDataManager() {
         </div>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ReferenceType)}>
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
-            <TabsList className="grid grid-cols-3 w-full sm:w-auto">
+          <div className="flex flex-col gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+              <TabsList className="grid grid-cols-3 w-full sm:w-auto">
               <TabsTrigger value="property_areas" className="text-xs sm:text-sm">
                 Районы
               </TabsTrigger>
@@ -226,7 +233,7 @@ export default function ReferenceDataManager() {
               </TabsTrigger>
             </TabsList>
 
-            <div className="flex gap-2 w-full sm:w-auto">
+              <div className="flex gap-2 w-full sm:w-auto">
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button
@@ -295,6 +302,14 @@ export default function ReferenceDataManager() {
                 </Button>
               </div>
             </div>
+            </div>
+
+            <Input
+              placeholder="Поиск по названию..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="max-w-md"
+            />
           </div>
 
           {(["property_series", "property_developers", "property_areas"] as ReferenceType[]).map((type) => (
@@ -314,14 +329,14 @@ export default function ReferenceDataManager() {
                           Загрузка...
                         </TableCell>
                       </TableRow>
-                    ) : items.length === 0 ? (
+                    ) : filteredItems.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={2} className="text-center">
-                          Нет данных
+                          {searchQuery ? "Ничего не найдено" : "Нет данных"}
                         </TableCell>
                       </TableRow>
                     ) : (
-                      items.map((item) => (
+                      filteredItems.map((item) => (
                         <TableRow key={item.id}>
                           <TableCell>{item.name}</TableCell>
                           <TableCell>
