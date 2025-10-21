@@ -45,7 +45,7 @@ const PropertyPublicDetails = () => {
   const fetchPropertyDetails = async () => {
     try {
       const { data, error } = await supabase
-        .from("properties_public")
+        .from("properties")
         .select(`
           id,
           property_number,
@@ -66,7 +66,8 @@ const PropertyPublicDetails = () => {
           property_photos (id, photo_url, display_order)
         `)
         .eq("id", id)
-        .single();
+        .eq("status", "published")
+        .maybeSingle();
 
       if (error) throw error;
 
