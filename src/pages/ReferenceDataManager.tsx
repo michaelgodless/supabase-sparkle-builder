@@ -3,27 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Pencil, Trash2, Upload } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -57,10 +39,7 @@ export default function ReferenceDataManager() {
   const fetchItems = async (type: ReferenceType) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from(type)
-        .select("*")
-        .order("name");
+      const { data, error } = await supabase.from(type).select("*").order("name");
 
       if (error) throw error;
       setItems(data || []);
@@ -88,17 +67,12 @@ export default function ReferenceDataManager() {
     setLoading(true);
     try {
       if (editItem) {
-        const { error } = await supabase
-          .from(activeTab)
-          .update({ name: newItemName.trim() })
-          .eq("id", editItem.id);
+        const { error } = await supabase.from(activeTab).update({ name: newItemName.trim() }).eq("id", editItem.id);
 
         if (error) throw error;
         toast({ title: "Успешно обновлено" });
       } else {
-        const { error } = await supabase
-          .from(activeTab)
-          .insert({ name: newItemName.trim() });
+        const { error } = await supabase.from(activeTab).insert({ name: newItemName.trim() });
 
         if (error) throw error;
         toast({ title: "Успешно добавлено" });
@@ -149,14 +123,21 @@ export default function ReferenceDataManager() {
       try {
         const text = e.target?.result as string;
         const lines = text.split("\n").filter((line) => line.trim());
-        
+
         // Skip header if exists
-        const startIndex = lines[0].toLowerCase().includes("name") || lines[0].toLowerCase().includes("название") ? 1 : 0;
-        const names = lines.slice(startIndex).map((line) => {
-          // Handle CSV with quotes and commas
-          const name = line.split(",")[0].replace(/^"(.*)"$/, "$1").trim();
-          return name;
-        }).filter((name) => name);
+        const startIndex =
+          lines[0].toLowerCase().includes("name") || lines[0].toLowerCase().includes("название") ? 1 : 0;
+        const names = lines
+          .slice(startIndex)
+          .map((line) => {
+            // Handle CSV with quotes and commas
+            const name = line
+              .split(",")[0]
+              .replace(/^"(.*)"$/, "$1")
+              .trim();
+            return name;
+          })
+          .filter((name) => name);
 
         if (names.length === 0) {
           toast({
@@ -168,31 +149,29 @@ export default function ReferenceDataManager() {
         }
 
         setLoading(true);
-        
+
         // Получаем существующие записи
-        const { data: existing, error: fetchError } = await supabase
-          .from(activeTab)
-          .select("name");
-        
+        const { data: existing, error: fetchError } = await supabase.from(activeTab).select("name");
+
         if (fetchError) throw fetchError;
-        
+
         // Фильтруем только новые имена и убираем дубликаты из самого файла
-        const existingNames = new Set(existing?.map(item => item.name.toLowerCase()) || []);
-        
+        const existingNames = new Set(existing?.map((item) => item.name.toLowerCase()) || []);
+
         // Создаем Map для сохранения оригинального регистра имен
         const uniqueNamesMap = new Map<string, string>();
-        names.forEach(name => {
+        names.forEach((name) => {
           const lowerName = name.toLowerCase();
           if (!uniqueNamesMap.has(lowerName)) {
             uniqueNamesMap.set(lowerName, name);
           }
         });
-        
+
         // Фильтруем новые имена, сохраняя оригинальный регистр
         const newNames = Array.from(uniqueNamesMap.entries())
           .filter(([lowerName]) => !existingNames.has(lowerName))
           .map(([, originalName]) => originalName);
-        
+
         if (newNames.length === 0) {
           toast({
             title: "Информация",
@@ -202,16 +181,14 @@ export default function ReferenceDataManager() {
           return;
         }
 
-        const { error } = await supabase
-          .from(activeTab)
-          .insert(newNames.map((name) => ({ name })));
+        const { error } = await supabase.from(activeTab).insert(newNames.map((name) => ({ name })));
 
         if (error) throw error;
-        
+
         const skipped = names.length - newNames.length;
         toast({
           title: "Успешно импортировано",
-          description: `Добавлено ${newNames.length} элементов${skipped > 0 ? `, пропущено дубликатов: ${skipped}` : ''}`,
+          description: `Добавлено ${newNames.length} элементов${skipped > 0 ? `, пропущено дубликатов: ${skipped}` : ""}`,
         });
         fetchItems(activeTab);
       } catch (error: any) {
@@ -238,11 +215,17 @@ export default function ReferenceDataManager() {
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ReferenceType)}>
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
             <TabsList className="grid grid-cols-3 w-full sm:w-auto">
-              <TabsTrigger value="property_series" className="text-xs sm:text-sm">Серии</TabsTrigger>
-              <TabsTrigger value="property_developers" className="text-xs sm:text-sm">Застройщики</TabsTrigger>
-              <TabsTrigger value="property_areas" className="text-xs sm:text-sm">Районы</TabsTrigger>
+              <TabsTrigger value="property_areas" className="text-xs sm:text-sm">
+                Районы
+              </TabsTrigger>
+              <TabsTrigger value="property_series" className="text-xs sm:text-sm">
+                Серии
+              </TabsTrigger>
+              <TabsTrigger value="property_developers" className="text-xs sm:text-sm">
+                ЖК
+              </TabsTrigger>
             </TabsList>
-            
+
             <div className="flex gap-2 w-full sm:w-auto">
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
@@ -258,59 +241,59 @@ export default function ReferenceDataManager() {
                     <span className="sm:hidden">Добавить</span>
                   </Button>
                 </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>
-                        {editItem ? "Редактировать" : "Добавить"} {REFERENCE_LABELS[activeTab]}
-                      </DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="name">Название</Label>
-                        <Input
-                          id="name"
-                          value={newItemName}
-                          onChange={(e) => setNewItemName(e.target.value)}
-                          placeholder="Введите название"
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        <Button onClick={handleSave} disabled={loading}>
-                          Сохранить
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            setIsDialogOpen(false);
-                            setEditItem(null);
-                            setNewItemName("");
-                          }}
-                        >
-                          Отмена
-                        </Button>
-                      </div>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editItem ? "Редактировать" : "Добавить"} {REFERENCE_LABELS[activeTab]}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="name">Название</Label>
+                      <Input
+                        id="name"
+                        value={newItemName}
+                        onChange={(e) => setNewItemName(e.target.value)}
+                        placeholder="Введите название"
+                      />
                     </div>
-                  </DialogContent>
-                </Dialog>
+                    <div className="flex gap-2">
+                      <Button onClick={handleSave} disabled={loading}>
+                        Сохранить
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setIsDialogOpen(false);
+                          setEditItem(null);
+                          setNewItemName("");
+                        }}
+                      >
+                        Отмена
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
-                <div className="flex-1 sm:flex-none">
-                  <input
-                    type="file"
-                    accept=".csv,.txt"
-                    onChange={handleImport}
-                    style={{ display: "none" }}
-                    id={`import-${activeTab}`}
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={() => document.getElementById(`import-${activeTab}`)?.click()}
-                    className="w-full sm:w-auto"
-                  >
-                    <Upload className="mr-2 h-4 w-4" />
-                    <span className="hidden sm:inline">Импорт CSV</span>
-                    <span className="sm:hidden">Импорт</span>
-                  </Button>
-                </div>
+              <div className="flex-1 sm:flex-none">
+                <input
+                  type="file"
+                  accept=".csv,.txt"
+                  onChange={handleImport}
+                  style={{ display: "none" }}
+                  id={`import-${activeTab}`}
+                />
+                <Button
+                  variant="outline"
+                  onClick={() => document.getElementById(`import-${activeTab}`)?.click()}
+                  className="w-full sm:w-auto"
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  <span className="hidden sm:inline">Импорт CSV</span>
+                  <span className="sm:hidden">Импорт</span>
+                </Button>
+              </div>
             </div>
           </div>
 
