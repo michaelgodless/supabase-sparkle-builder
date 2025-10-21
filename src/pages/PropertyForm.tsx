@@ -868,7 +868,7 @@ export default function PropertyForm() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Мебель</Label>
+                    <Label>Условия</Label>
                     <div className="grid grid-cols-2 gap-2">
                       {furnitureTypes.map((type) => (
                         <div key={type.id} className="flex items-center space-x-2">
