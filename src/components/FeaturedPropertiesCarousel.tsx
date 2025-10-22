@@ -55,16 +55,22 @@ export function FeaturedPropertiesCarousel() {
             property_size,
             property_category_id,
             property_subcategory_id,
-            property_action_category_id
+            property_action_category_id,
+            status
           )
         `)
         .order("display_order", { ascending: true });
 
       if (error) throw error;
 
+      // Filter only published properties
+      const publishedData = (data || []).filter(
+        (item: any) => item.properties?.status === 'published'
+      );
+
       // Fetch photos for each property
       const propertiesWithPhotos = await Promise.all(
-        (data || []).map(async (item) => {
+        publishedData.map(async (item) => {
           const { data: photos } = await supabase
             .from("property_photos")
             .select("photo_url")
@@ -102,8 +108,37 @@ export function FeaturedPropertiesCarousel() {
     return () => clearInterval(interval);
   }, [featured.length]);
 
-  if (loading || featured.length === 0) {
+  if (loading) {
     return null;
+  }
+
+  if (featured.length === 0) {
+    return (
+      <section className="py-16 bg-gradient-to-b from-muted/30 to-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-10">
+            <Badge variant="secondary" className="mb-3">
+              Рекомендуемые объекты
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Избранная недвижимость
+            </h2>
+          </div>
+          <Card className="max-w-2xl mx-auto">
+            <CardContent className="p-12 text-center">
+              <MapPin className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Скоро появятся новые объекты</h3>
+              <p className="text-muted-foreground mb-6">
+                Мы работаем над добавлением лучших предложений для вас
+              </p>
+              <Button onClick={() => navigate('/properties')} variant="outline">
+                Смотреть все объекты
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+    );
   }
 
   const currentProperty = featured[currentIndex];
