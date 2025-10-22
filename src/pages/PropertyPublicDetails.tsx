@@ -46,7 +46,8 @@ const PropertyPublicDetails = () => {
     try {
       const { data, error } = await supabase
         .from("properties")
-        .select(`
+        .select(
+          `
           id,
           property_number,
           price,
@@ -64,7 +65,8 @@ const PropertyPublicDetails = () => {
           property_action_categories (name),
           property_conditions (name),
           property_photos (id, photo_url, display_order)
-        `)
+        `,
+        )
         .eq("id", id)
         .eq("status", "published")
         .maybeSingle();
@@ -72,9 +74,7 @@ const PropertyPublicDetails = () => {
       if (error) throw error;
 
       if (data) {
-        const sortedPhotos = [...(data.property_photos || [])].sort(
-          (a, b) => a.display_order - b.display_order
-        );
+        const sortedPhotos = [...(data.property_photos || [])].sort((a, b) => a.display_order - b.display_order);
         setProperty({ ...data, property_photos: sortedPhotos });
         if (sortedPhotos.length > 0) {
           setSelectedPhoto(sortedPhotos[0].photo_url);
@@ -94,8 +94,8 @@ const PropertyPublicDetails = () => {
 
   const handleContactRequest = () => {
     const message = `Хочу узнать подробнее об этом объекте: ${window.location.href}`;
-    const whatsappUrl = `https://wa.me/996503090699?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    const whatsappUrl = `https://api.wa.me/send?phone=996503090699?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
   };
 
   if (loading) {
@@ -121,12 +121,8 @@ const PropertyPublicDetails = () => {
             <CardContent className="py-12 text-center">
               <Home className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">Объект не найден</h3>
-              <p className="text-muted-foreground mb-6">
-                Возможно, объект был удален или снят с публикации
-              </p>
-              <Button onClick={() => navigate("/properties")}>
-                Вернуться к каталогу
-              </Button>
+              <p className="text-muted-foreground mb-6">Возможно, объект был удален или снят с публикации</p>
+              <Button onClick={() => navigate("/properties")}>Вернуться к каталогу</Button>
             </CardContent>
           </Card>
         </div>
@@ -155,13 +151,8 @@ const PropertyPublicDetails = () => {
       </header>
 
       <div className="container mx-auto px-4 py-6">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/properties")}
-          className="mb-4"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          К каталогу
+        <Button variant="ghost" onClick={() => navigate("/properties")} className="mb-4">
+          <ArrowLeft className="h-4 w-4 mr-2" />К каталогу
         </Button>
 
         <div className="grid lg:grid-cols-3 gap-6">
@@ -170,9 +161,7 @@ const PropertyPublicDetails = () => {
             {/* Header */}
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h1 className="text-3xl font-bold mb-2">
-                  Объект №{property.property_number}
-                </h1>
+                <h1 className="text-3xl font-bold mb-2">Объект №{property.property_number}</h1>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <MapPin className="h-4 w-4" />
                   <span>{property.property_areas?.name || "Район не указан"}</span>
@@ -189,11 +178,7 @@ const PropertyPublicDetails = () => {
                 <div className="space-y-4">
                   {selectedPhoto && (
                     <div className="aspect-video bg-muted rounded-lg overflow-hidden">
-                      <img
-                        src={selectedPhoto}
-                        alt="Property"
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={selectedPhoto} alt="Property" className="w-full h-full object-cover" />
                     </div>
                   )}
                   {property.property_photos.length > 1 && (
@@ -208,11 +193,7 @@ const PropertyPublicDetails = () => {
                           }`}
                           onClick={() => setSelectedPhoto(photo.photo_url)}
                         >
-                          <img
-                            src={photo.photo_url}
-                            alt="Thumbnail"
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={photo.photo_url} alt="Thumbnail" className="w-full h-full object-cover" />
                         </div>
                       ))}
                     </div>
@@ -241,9 +222,7 @@ const PropertyPublicDetails = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm text-muted-foreground">Категория</p>
-                        <p className="font-medium">
-                          {property.property_categories?.name || "—"}
-                        </p>
+                        <p className="font-medium">{property.property_categories?.name || "—"}</p>
                       </div>
                       {property.property_rooms && (
                         <div>
@@ -271,9 +250,7 @@ const PropertyPublicDetails = () => {
                       )}
                       <div>
                         <p className="text-sm text-muted-foreground">Район</p>
-                        <p className="font-medium">
-                          {property.property_areas?.name || "—"}
-                        </p>
+                        <p className="font-medium">{property.property_areas?.name || "—"}</p>
                       </div>
                     </div>
                   </TabsContent>
@@ -295,23 +272,15 @@ const PropertyPublicDetails = () => {
                   <p className="text-sm text-muted-foreground text-center">
                     Для получения подробной информации и организации показа свяжитесь с нами
                   </p>
-                  <Button
-                    className="w-full"
-                    size="lg"
-                    onClick={handleContactRequest}
-                  >
+                  <Button className="w-full" size="lg" onClick={handleContactRequest}>
                     <Phone className="h-5 w-5 mr-2" />
                     Связаться с нами
                   </Button>
                 </div>
 
                 <div className="text-xs text-muted-foreground space-y-1">
-                  <p>
-                    * Точный адрес объекта предоставляется после согласования показа
-                  </p>
-                  <p>
-                    * Контактная информация владельца доступна только нашим клиентам
-                  </p>
+                  <p>* Точный адрес объекта предоставляется после согласования показа</p>
+                  <p>* Контактная информация владельца доступна только нашим клиентам</p>
                 </div>
               </CardContent>
             </Card>
@@ -330,9 +299,7 @@ const PropertyPublicDetails = () => {
                 <p className="text-sm text-muted-foreground">Навигатор в мире недвижимости</p>
               </div>
             </div>
-            <p className="text-muted-foreground text-sm">
-              © 2024 Navigator House. Все права защищены.
-            </p>
+            <p className="text-muted-foreground text-sm">© 2024 Navigator House. Все права защищены.</p>
           </div>
         </div>
       </footer>
