@@ -50,6 +50,7 @@ export default function MyProperties() {
           property_conditions(name, code)
         `)
         .eq('created_by', user?.id)
+        .neq('status', 'deleted')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -83,19 +84,23 @@ export default function MyProperties() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Вы уверены, что хотите удалить это объявление?')) return;
+    if (!confirm('Вы уверены, что хотите переместить это объявление в корзину?')) return;
 
     try {
       const { error } = await supabase
         .from('properties')
-        .delete()
+        .update({ 
+          status: 'deleted',
+          deleted_at: new Date().toISOString(),
+          deleted_by: user?.id
+        })
         .eq('id', id);
 
       if (error) throw error;
 
       toast({
         title: 'Успешно',
-        description: 'Объявление удалено',
+        description: 'Объявление перемещено в корзину',
       });
       fetchMyProperties();
     } catch (error) {
@@ -103,7 +108,7 @@ export default function MyProperties() {
       toast({
         variant: 'destructive',
         title: 'Ошибка',
-        description: 'Не удалось удалить объявление',
+        description: 'Не удалось переместить объявление в корзину',
       });
     }
   };

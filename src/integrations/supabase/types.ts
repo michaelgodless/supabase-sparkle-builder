@@ -386,6 +386,8 @@ export type Database = {
           created_at: string
           created_by: string
           currency: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           description: string | null
           documents: string[] | null
           furniture: string[] | null
@@ -427,6 +429,8 @@ export type Database = {
           created_at?: string
           created_by: string
           currency?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           documents?: string[] | null
           furniture?: string[] | null
@@ -468,6 +472,8 @@ export type Database = {
           created_at?: string
           created_by?: string
           currency?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           documents?: string[] | null
           furniture?: string[] | null

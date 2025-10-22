@@ -1,4 +1,4 @@
-import { Home, Building2, Star, Calendar, FileText, Settings, Users, Activity, LogOut, Database } from 'lucide-react';
+import { Home, Building2, Star, Calendar, FileText, Settings, Users, Activity, LogOut, Database, Trash2 } from 'lucide-react';
 import navigatorLogo from '@/assets/navigator-house-logo.png';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -23,6 +23,12 @@ const navItems: NavItem[] = [
     title: 'Мои объявления',
     href: '/my-properties',
     icon: Building2,
+    roles: ['super_admin', 'manager'],
+  },
+  {
+    title: 'Корзина',
+    href: '/trash',
+    icon: Trash2,
     roles: ['super_admin', 'manager'],
   },
   {
