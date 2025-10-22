@@ -94,7 +94,7 @@ const PropertyPublicDetails = () => {
 
   const handleContactRequest = () => {
     const message = `Хочу узнать подробнее об этом объекте: ${window.location.href}`;
-    const whatsappUrl = `https://api.wa.me/send?phone=996503090699?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=996503090699?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
   };
 
