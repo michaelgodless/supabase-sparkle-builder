@@ -74,7 +74,7 @@ export default function Admin() {
       // Fetch profiles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, email, full_name, phone, is_active, created_at')
+        .select('id, email, full_name, phone, avatar_url, is_active, created_at')
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
