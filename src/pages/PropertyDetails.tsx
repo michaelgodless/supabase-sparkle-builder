@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Building2, MapPin, Ruler, Home, Calendar, Phone, User, DollarSign, Star, Edit } from 'lucide-react';
@@ -47,7 +48,7 @@ export default function PropertyDetails() {
           property_communication_types(communication_types(name)),
           property_payment_types(payment_types(name)),
           property_document_types(document_types(name)),
-          profiles!properties_created_by_fkey(full_name, phone, email)
+          profiles!properties_created_by_fkey(full_name, phone, email, avatar_url)
         `)
         .eq('id', id)
         .single();
@@ -72,7 +73,7 @@ export default function PropertyDetails() {
         .from('viewings')
         .select(`
           *,
-          profiles!viewings_assigned_by_fkey(full_name, phone)
+          profiles!viewings_assigned_by_fkey(full_name, phone, avatar_url)
         `)
         .eq('property_id', id)
         .order('scheduled_at', { ascending: false });
@@ -457,15 +458,29 @@ export default function PropertyDetails() {
                           {getViewingStatusText(viewing.status)}
                         </Badge>
                       </div>
-                      <CardDescription>
-                        Назначил: {viewing.profiles?.full_name || 'Неизвестно'}
-                      </CardDescription>
                     </CardHeader>
-                    {viewing.notes && (
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground">{viewing.notes}</p>
-                      </CardContent>
-                    )}
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={viewing.profiles?.avatar_url || undefined} alt={viewing.profiles?.full_name} />
+                            <AvatarFallback className="text-xs">
+                              {viewing.profiles?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium">{viewing.profiles?.full_name}</span>
+                        </div>
+                        {viewing.profiles?.phone && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Phone className="h-4 w-4" />
+                            <span>{viewing.profiles.phone}</span>
+                          </div>
+                        )}
+                        {viewing.notes && (
+                          <p className="text-sm text-muted-foreground mt-2">{viewing.notes}</p>
+                        )}
+                      </div>
+                    </CardContent>
                   </Card>
                 ))
               ) : (
@@ -517,16 +532,20 @@ export default function PropertyDetails() {
                 <CardTitle>Ответственный менеджер</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{property.profiles.full_name}</span>
-                </div>
-                {property.profiles.phone && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{property.profiles.phone}</span>
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={property.profiles.avatar_url || undefined} alt={property.profiles.full_name} />
+                    <AvatarFallback>
+                      {property.profiles.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium">{property.profiles.full_name}</p>
+                    {property.profiles.phone && (
+                      <p className="text-xs text-muted-foreground">{property.profiles.phone}</p>
+                    )}
                   </div>
-                )}
+                </div>
               </CardContent>
             </Card>
           )}

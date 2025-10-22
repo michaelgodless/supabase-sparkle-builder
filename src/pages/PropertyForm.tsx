@@ -8,10 +8,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card as ShadCard, CardContent as ShadCardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { SearchableSelect } from "@/components/SearchableSelect";
+import PhotoPreview from "@/components/PhotoPreview";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Upload } from "lucide-react";
-import PhotoPreview from "@/components/PhotoPreview";
+import { ArrowLeft, Save, Upload, X, UserPlus } from "lucide-react";
 import {
   PropertyActionCategory,
   PropertyCategory,
@@ -25,9 +30,6 @@ import {
   ROOM_OPTIONS,
   generateFloorOptions,
 } from "@/types/property";
-import { Badge } from "@/components/ui/badge";
-import { X, UserPlus } from "lucide-react";
-import { SearchableSelect } from "@/components/SearchableSelect";
 
 export default function PropertyForm() {
   const navigate = useNavigate();
@@ -981,6 +983,12 @@ export default function PropertyForm() {
                         className="flex items-center justify-between p-2 bg-background rounded border"
                       >
                         <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={collab.profiles?.avatar_url || undefined} alt={collab.profiles?.full_name} />
+                            <AvatarFallback className="text-xs">
+                              {collab.profiles?.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
                           <Badge variant="secondary">{collab.profiles?.full_name}</Badge>
                           <span className="text-sm text-muted-foreground">{collab.profiles?.email}</span>
                         </div>
@@ -1007,7 +1015,15 @@ export default function PropertyForm() {
                         .filter((m) => !collaborators.some((c) => c.user_id === m.id))
                         .map((manager) => (
                           <SelectItem key={manager.id} value={manager.id}>
-                            {manager.full_name} ({manager.email})
+                            <div className="flex items-center gap-2">
+                              <Avatar className="h-6 w-6">
+                                <AvatarImage src={manager.avatar_url || undefined} alt={manager.full_name} />
+                                <AvatarFallback className="text-xs">
+                                  {manager.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span>{manager.full_name} ({manager.email})</span>
+                            </div>
                           </SelectItem>
                         ))}
                     </SelectContent>

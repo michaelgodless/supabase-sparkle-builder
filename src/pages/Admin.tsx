@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Search, UserCheck, UserX, Shield, UserPlus } from 'lucide-react';
@@ -39,6 +40,7 @@ interface UserWithRole {
   email: string;
   full_name: string;
   phone: string;
+  avatar_url: string | null;
   is_active: boolean;
   created_at: string;
   roles: { role: string }[];
@@ -444,11 +446,21 @@ export default function Admin() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.full_name}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.phone || '—'}</TableCell>
+                  filteredUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={user.avatar_url || undefined} alt={user.full_name} />
+                            <AvatarFallback>
+                              {user.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium">{user.full_name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.phone || '—'}</TableCell>
                     <TableCell>
                       <div className="flex gap-1 flex-wrap">
                         {user.roles.length === 0 ? (
