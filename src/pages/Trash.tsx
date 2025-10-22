@@ -48,15 +48,33 @@ export default function Trash() {
           property_photos(photo_url, display_order),
           property_categories(name, code),
           property_action_categories(name, code),
-          property_areas(name, full_name),
-          deleted_by_profile:profiles!properties_deleted_by_fkey(full_name, avatar_url)
+          property_areas(name, full_name)
         `)
         .eq('status', 'deleted')
         .order('deleted_at', { ascending: false });
 
       if (error) throw error;
-      
-      setProperties(data || []);
+
+      // Fetch profiles for deleted_by users
+      const deletedByIds = (data || [])
+        .map(p => p.deleted_by)
+        .filter((id): id is string => id !== null);
+
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, full_name, avatar_url')
+        .in('id', [...new Set(deletedByIds)]);
+
+      const profilesMap = new Map(
+        (profilesData || []).map(p => [p.id, p])
+      );
+
+      const propertiesWithProfiles = (data || []).map(p => ({
+        ...p,
+        deleted_by_profile: p.deleted_by ? [profilesMap.get(p.deleted_by)].filter(Boolean) : []
+      }));
+
+      setProperties(propertiesWithProfiles);
     } catch (error) {
       console.error('Error fetching deleted properties:', error);
       toast({
