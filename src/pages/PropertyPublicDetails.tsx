@@ -355,35 +355,35 @@ const PropertyPublicDetails = () => {
                   <p>* Контактная информация владельца доступна только нашим клиентам</p>
                 </div>
               </CardContent>
-            </Card>
 
-            {/* Manager Info */}
-            {manager && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Ответственный менеджер</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={manager.avatar_url || undefined} alt={manager.full_name} />
-                      <AvatarFallback>
-                        {manager.full_name
-                          ?.split(" ")
-                          .map((n: string) => n[0])
-                          .join("")
-                          .toUpperCase()
-                          .slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">{manager.full_name}</p>
-                      {manager.phone && <p className="text-xs text-muted-foreground">{manager.phone}</p>}
+              {/* Manager Info */}
+              {manager && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Ответственный менеджер</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={manager.avatar_url || undefined} alt={manager.full_name} />
+                        <AvatarFallback>
+                          {manager.full_name
+                            ?.split(" ")
+                            .map((n: string) => n[0])
+                            .join("")
+                            .toUpperCase()
+                            .slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-medium">{manager.full_name}</p>
+                        {manager.phone && <p className="text-xs text-muted-foreground">{manager.phone}</p>}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                  </CardContent>
+                </Card>
+              )}
+            </Card>
           </div>
         </div>
       </div>
