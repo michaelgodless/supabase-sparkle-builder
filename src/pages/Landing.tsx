@@ -531,7 +531,15 @@ const Landing = () => {
         transition={{ duration: 0.6 }}
         className="w-full h-[400px] md:h-[450px] rounded-xl overflow-hidden shadow-lg"
       >
-  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d182.8670441593539!2d74.63967833422474!3d42.83330263457077!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x389eb67d8eaf5739%3A0xa19fbf757fc240d1!2zMiDRg9C70LjRhtCwINCc0L7Qu9C00L7QutGD0LvQvtCy0LAsINCR0LjRiNC60LXQug!5e0!3m2!1sru!2skg!4v1761415987422!5m2!1sru!2skg" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <iframe 
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d182.8670441593539!2d74.63967833422474!3d42.83330263457077!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x389eb67d8eaf5739%3A0xa19fbf757fc240d1!2zMiDRg9C70LjRhtCwINCc0L7Qu9C00L7QutGD0LvQvtCy0LAsINCR0LjRiNC60LXQug!5e0!3m2!1sru!2skg!4v1761415987422!5m2!1sru!2skg" 
+          width="100%" 
+          height="100%" 
+          style={{ border: 0 }} 
+          allowFullScreen 
+          loading="lazy" 
+          referrerPolicy="no-referrer-when-downgrade"
+        />
       </motion.div>
     </div>
   </div>
