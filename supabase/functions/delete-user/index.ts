@@ -71,7 +71,21 @@ serve(async (req) => {
       )
     }
 
-    // First, delete user roles
+    // First, update audit_logs to set user_id to NULL (preserve audit history)
+    const { error: auditError } = await supabaseAdmin
+      .from('audit_logs')
+      .update({ user_id: null })
+      .eq('user_id', userId)
+
+    if (auditError) {
+      console.error('Error updating audit logs:', auditError)
+      return new Response(
+        JSON.stringify({ error: 'Ошибка обновления логов аудита' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Delete user roles
     const { error: rolesError } = await supabaseAdmin
       .from('user_roles')
       .delete()
