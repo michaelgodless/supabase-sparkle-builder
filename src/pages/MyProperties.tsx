@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { formatPriceDisplay } from '@/lib/priceUtils';
+import { formatPrice } from '@/lib/priceUtils';
 
 type PropertyStatus = Database['public']['Enums']['property_status'];
 
@@ -377,11 +377,17 @@ export default function MyProperties() {
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Цена:</span>
-                    <span className="font-semibold">
-                      {formatPriceDisplay(property.price, property.currency, property.exchange_rate)}
-                    </span>
+                  <div className="flex flex-col">
+                    <span className="text-sm text-muted-foreground mb-1">Цена:</span>
+                    {(() => {
+                      const { original, converted } = formatPrice(property.price, property.currency, property.exchange_rate);
+                      return (
+                        <div>
+                          <span className="font-semibold">{original}</span>
+                          {converted && <span className="text-xs text-muted-foreground block mt-0.5">{converted}</span>}
+                        </div>
+                      );
+                    })()}
                   </div>
                   {property.property_size && (
                     <div className="flex justify-between">

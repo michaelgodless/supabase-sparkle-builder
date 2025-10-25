@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowLeft, MapPin, Home, Maximize, Phone, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { formatPriceDisplay } from "@/lib/priceUtils";
+import { formatPrice } from "@/lib/priceUtils";
 import navigatorLogo from "@/assets/navigator-house-logo.png";
 import { toast } from "sonner";
 
@@ -334,9 +334,15 @@ const PropertyPublicDetails = () => {
           <div className="space-y-6">
             <Card className="sticky top-24">
               <CardHeader>
-                <CardTitle className="text-3xl font-bold text-primary">
-                  {formatPriceDisplay(property.price, property.currency, property.exchange_rate)}
-                </CardTitle>
+                {(() => {
+                  const { original, converted } = formatPrice(property.price, property.currency, property.exchange_rate);
+                  return (
+                    <div>
+                      <CardTitle className="text-3xl font-bold text-primary">{original}</CardTitle>
+                      {converted && <p className="text-lg text-muted-foreground mt-2">{converted}</p>}
+                    </div>
+                  );
+                })()}
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="p-4 bg-muted rounded-lg space-y-3">

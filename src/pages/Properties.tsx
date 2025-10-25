@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Search, MapPin, Home, Filter } from "lucide-react";
 import { ROOM_OPTIONS } from "@/types/property";
-import { formatPriceDisplay } from "@/lib/priceUtils";
+import { formatPrice } from "@/lib/priceUtils";
 import navigatorLogo from "@/assets/navigator-house-logo.png";
 
 interface Property {
@@ -466,9 +466,15 @@ const Properties = () => {
                       </p>
                     )}
                     <div className="pt-2 border-t">
-                      <p className="text-2xl font-bold text-primary">
-                        {formatPriceDisplay(property.price, property.currency, property.exchange_rate)}
-                      </p>
+                      {(() => {
+                        const { original, converted } = formatPrice(property.price, property.currency, property.exchange_rate);
+                        return (
+                          <div>
+                            <p className="text-2xl font-bold text-primary">{original}</p>
+                            {converted && <p className="text-sm text-muted-foreground mt-1">{converted}</p>}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </CardContent>
                 </Card>
