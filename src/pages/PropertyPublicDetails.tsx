@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, MapPin, Home, Maximize, Phone } from "lucide-react";
+import { ArrowLeft, MapPin, Home, Maximize, Phone, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import navigatorLogo from "@/assets/navigator-house-logo.png";
 import { toast } from "sonner";
 
@@ -35,6 +36,8 @@ const PropertyPublicDetails = () => {
   const [property, setProperty] = useState<PropertyDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [fullscreenOpen, setFullscreenOpen] = useState(false);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -97,6 +100,36 @@ const PropertyPublicDetails = () => {
     const whatsappUrl = `https://api.whatsapp.com/send?phone=996503090699?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
   };
+
+  const openFullscreen = (index: number) => {
+    setCurrentPhotoIndex(index);
+    setFullscreenOpen(true);
+  };
+
+  const nextPhoto = () => {
+    if (property && property.property_photos.length > 0) {
+      setCurrentPhotoIndex((prev) => (prev + 1) % property.property_photos.length);
+    }
+  };
+
+  const prevPhoto = () => {
+    if (property && property.property_photos.length > 0) {
+      setCurrentPhotoIndex((prev) => (prev - 1 + property.property_photos.length) % property.property_photos.length);
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (fullscreenOpen) {
+        if (e.key === "ArrowRight") nextPhoto();
+        if (e.key === "ArrowLeft") prevPhoto();
+        if (e.key === "Escape") setFullscreenOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [fullscreenOpen, property]);
 
   if (loading) {
     return (
@@ -177,13 +210,19 @@ const PropertyPublicDetails = () => {
               <CardContent className="p-4">
                 <div className="space-y-4">
                   {selectedPhoto && (
-                    <div className="aspect-video bg-muted rounded-lg overflow-hidden">
+                    <div className="relative aspect-video bg-muted rounded-lg overflow-hidden group">
                       <img src={selectedPhoto} alt="Property" className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => openFullscreen(property.property_photos.findIndex(p => p.photo_url === selectedPhoto))}
+                        className="absolute top-4 right-4 p-2 bg-background/80 hover:bg-background rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                      >
+                        <Maximize className="h-5 w-5" />
+                      </button>
                     </div>
                   )}
                   {property.property_photos.length > 1 && (
                     <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
-                      {property.property_photos.map((photo) => (
+                      {property.property_photos.map((photo, index) => (
                         <div
                           key={photo.id}
                           className={`aspect-square bg-muted rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
@@ -303,6 +342,53 @@ const PropertyPublicDetails = () => {
           </div>
         </div>
       </footer>
+
+      {/* Fullscreen Photo Dialog */}
+      <Dialog open={fullscreenOpen} onOpenChange={setFullscreenOpen}>
+        <DialogContent className="max-w-[100vw] h-screen p-0 bg-background/95 backdrop-blur">
+          <div className="relative w-full h-full flex items-center justify-center">
+            <button
+              onClick={() => setFullscreenOpen(false)}
+              className="absolute top-4 right-4 z-50 p-2 bg-background/80 hover:bg-background rounded-lg transition-all"
+            >
+              <X className="h-6 w-6" />
+            </button>
+
+            {property && property.property_photos.length > 0 && (
+              <>
+                <img
+                  src={property.property_photos[currentPhotoIndex].photo_url}
+                  alt={`Photo ${currentPhotoIndex + 1}`}
+                  className="max-w-full max-h-full object-contain"
+                />
+
+                {property.property_photos.length > 1 && (
+                  <>
+                    <button
+                      onClick={prevPhoto}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-background/80 hover:bg-background rounded-full transition-all"
+                    >
+                      <ChevronLeft className="h-8 w-8" />
+                    </button>
+                    <button
+                      onClick={nextPhoto}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-background/80 hover:bg-background rounded-full transition-all"
+                    >
+                      <ChevronRight className="h-8 w-8" />
+                    </button>
+
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-background/80 rounded-lg">
+                      <p className="text-sm font-medium">
+                        {currentPhotoIndex + 1} / {property.property_photos.length}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
