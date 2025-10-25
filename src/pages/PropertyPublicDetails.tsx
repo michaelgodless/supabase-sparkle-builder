@@ -345,39 +345,41 @@ const PropertyPublicDetails = () => {
 
       {/* Fullscreen Photo Dialog */}
       <Dialog open={fullscreenOpen} onOpenChange={setFullscreenOpen}>
-        <DialogContent className="max-w-[100vw] h-screen p-0 bg-background/95 backdrop-blur">
-          <div className="relative w-full h-full flex items-center justify-center">
+        <DialogContent className="max-w-7xl w-[95vw] p-0 border-0">
+          <div className="relative w-full bg-background rounded-lg overflow-hidden">
             <button
               onClick={() => setFullscreenOpen(false)}
-              className="absolute top-4 right-4 z-50 p-2 bg-background/80 hover:bg-background rounded-lg transition-all"
+              className="absolute top-4 right-4 z-50 p-2 bg-background/90 hover:bg-background rounded-lg transition-all shadow-lg"
             >
-              <X className="h-6 w-6" />
+              <X className="h-5 w-5" />
             </button>
 
             {property && property.property_photos.length > 0 && (
               <>
-                <img
-                  src={property.property_photos[currentPhotoIndex].photo_url}
-                  alt={`Photo ${currentPhotoIndex + 1}`}
-                  className="max-w-full max-h-full object-contain"
-                />
+                <div className="relative aspect-video bg-muted">
+                  <img
+                    src={property.property_photos[currentPhotoIndex].photo_url}
+                    alt={`Photo ${currentPhotoIndex + 1}`}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
 
                 {property.property_photos.length > 1 && (
                   <>
                     <button
                       onClick={prevPhoto}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-background/80 hover:bg-background rounded-full transition-all"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-background/90 hover:bg-background rounded-full transition-all shadow-lg"
                     >
-                      <ChevronLeft className="h-8 w-8" />
+                      <ChevronLeft className="h-6 w-6" />
                     </button>
                     <button
                       onClick={nextPhoto}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-background/80 hover:bg-background rounded-full transition-all"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-background/90 hover:bg-background rounded-full transition-all shadow-lg"
                     >
-                      <ChevronRight className="h-8 w-8" />
+                      <ChevronRight className="h-6 w-6" />
                     </button>
 
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-background/80 rounded-lg">
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-background/90 rounded-lg shadow-lg">
                       <p className="text-sm font-medium">
                         {currentPhotoIndex + 1} / {property.property_photos.length}
                       </p>
