@@ -38,8 +38,11 @@ export default function MyProperties() {
   }, [user]);
 
   const fetchMyProperties = async () => {
+    if (!user?.id) return;
+
     try {
-      const { data, error } = await supabase
+      // Fetch properties created by user
+      const { data: ownedData, error: ownedError } = await supabase
         .from('properties')
         .select(`
           *,
@@ -49,11 +52,47 @@ export default function MyProperties() {
           property_areas(name, full_name),
           property_conditions(name, code)
         `)
-        .eq('created_by', user?.id)
+        .eq('created_by', user.id)
         .neq('status', 'deleted')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (ownedError) throw ownedError;
+
+      // Fetch properties where user is a collaborator
+      const { data: collaboratorData, error: collaboratorError } = await supabase
+        .from('property_collaborators')
+        .select('property_id')
+        .eq('user_id', user.id);
+
+      if (collaboratorError) throw collaboratorError;
+
+      const collaboratorPropertyIds = collaboratorData?.map(c => c.property_id) || [];
+
+      let collaboratorProperties: any[] = [];
+      if (collaboratorPropertyIds.length > 0) {
+        const { data: collabData, error: collabError } = await supabase
+          .from('properties')
+          .select(`
+            *,
+            property_photos(photo_url, display_order),
+            property_categories(name, code),
+            property_action_categories(name, code),
+            property_areas(name, full_name),
+            property_conditions(name, code)
+          `)
+          .in('id', collaboratorPropertyIds)
+          .neq('status', 'deleted')
+          .order('created_at', { ascending: false });
+
+        if (collabError) throw collabError;
+        collaboratorProperties = collabData || [];
+      }
+
+      // Combine and deduplicate properties
+      const allProperties = [...(ownedData || []), ...collaboratorProperties];
+      const uniqueProperties = allProperties.filter((property, index, self) =>
+        index === self.findIndex((p) => p.id === property.id)
+      );
       
       // Fetch featured properties info
       const { data: featuredData } = await supabase
@@ -64,7 +103,7 @@ export default function MyProperties() {
         (featuredData || []).map(f => [f.property_id, f.display_order])
       );
       
-      const propertiesWithFeatured = (data || []).map(p => ({
+      const propertiesWithFeatured = uniqueProperties.map(p => ({
         ...p,
         is_featured: featuredMap.has(p.id),
         featured_order: featuredMap.get(p.id)

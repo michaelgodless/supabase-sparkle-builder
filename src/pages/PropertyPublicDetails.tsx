@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowLeft, MapPin, Home, Maximize, Phone, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import navigatorLogo from "@/assets/navigator-house-logo.png";
@@ -23,11 +24,13 @@ interface PropertyDetails {
   property_category_id: string | null;
   property_action_category_id: string | null;
   property_condition_id: string | null;
+  created_by: string;
   property_areas: { name: string; full_name: string | null } | null;
   property_categories: { name: string } | null;
   property_action_categories: { name: string } | null;
   property_conditions: { name: string } | null;
   property_photos: { id: string; photo_url: string; display_order: number }[];
+  profiles?: { full_name: string; phone: string | null; email: string; avatar_url: string | null } | null;
 }
 
 const PropertyPublicDetails = () => {
@@ -38,10 +41,13 @@ const PropertyPublicDetails = () => {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [fullscreenOpen, setFullscreenOpen] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [manager, setManager] = useState<any>(null);
+  const [collaborators, setCollaborators] = useState<any[]>([]);
 
   useEffect(() => {
     if (id) {
       fetchPropertyDetails();
+      fetchCollaborators();
     }
   }, [id]);
 
@@ -63,11 +69,13 @@ const PropertyPublicDetails = () => {
           property_category_id,
           property_action_category_id,
           property_condition_id,
+          created_by,
           property_areas (name, full_name),
           property_categories (name),
           property_action_categories (name),
           property_conditions (name),
-          property_photos (id, photo_url, display_order)
+          property_photos (id, photo_url, display_order),
+          profiles!properties_created_by_fkey (full_name, phone, email, avatar_url)
         `,
         )
         .eq("id", id)
@@ -79,6 +87,7 @@ const PropertyPublicDetails = () => {
       if (data) {
         const sortedPhotos = [...(data.property_photos || [])].sort((a, b) => a.display_order - b.display_order);
         setProperty({ ...data, property_photos: sortedPhotos });
+        setManager(data.profiles);
         if (sortedPhotos.length > 0) {
           setSelectedPhoto(sortedPhotos[0].photo_url);
         }
@@ -88,6 +97,26 @@ const PropertyPublicDetails = () => {
       toast.error("Не удалось загрузить информацию об объекте");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCollaborators = async () => {
+    if (!id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('property_collaborators')
+        .select(`
+          id,
+          user_id,
+          profiles:user_id(full_name, phone, email, avatar_url)
+        `)
+        .eq('property_id', id);
+
+      if (error) throw error;
+      setCollaborators(data || []);
+    } catch (error) {
+      console.error('Error fetching collaborators:', error);
     }
   };
 
@@ -323,6 +352,58 @@ const PropertyPublicDetails = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Manager Info */}
+            {manager && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Ответственный менеджер</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={manager.avatar_url || undefined} alt={manager.full_name} />
+                      <AvatarFallback>
+                        {manager.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">{manager.full_name}</p>
+                      {manager.phone && (
+                        <p className="text-xs text-muted-foreground">{manager.phone}</p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Collaborators Info */}
+            {collaborators.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Дополнительные договорники</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {collaborators.map((collaborator) => (
+                    <div key={collaborator.id} className="flex items-center gap-3 pb-3 border-b last:border-0 last:pb-0">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={collaborator.profiles?.avatar_url || undefined} alt={collaborator.profiles?.full_name} />
+                        <AvatarFallback>
+                          {collaborator.profiles?.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{collaborator.profiles?.full_name}</p>
+                        {collaborator.profiles?.phone && (
+                          <p className="text-xs text-muted-foreground">{collaborator.profiles.phone}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>

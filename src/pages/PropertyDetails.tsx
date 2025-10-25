@@ -21,6 +21,7 @@ export default function PropertyDetails() {
   const [selectedPhoto, setSelectedPhoto] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isCollaborator, setIsCollaborator] = useState(false);
+  const [collaborators, setCollaborators] = useState<any[]>([]);
 
   useEffect(() => {
     if (id) {
@@ -28,6 +29,7 @@ export default function PropertyDetails() {
       fetchViewings();
       checkFavorite();
       checkCollaborator();
+      fetchCollaborators();
     }
   }, [id, user?.id]);
 
@@ -117,6 +119,26 @@ export default function PropertyDetails() {
       setIsCollaborator(!!data);
     } catch (error) {
       // Not a collaborator
+    }
+  };
+
+  const fetchCollaborators = async () => {
+    if (!id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('property_collaborators')
+        .select(`
+          id,
+          user_id,
+          profiles:user_id(full_name, phone, email, avatar_url)
+        `)
+        .eq('property_id', id);
+
+      if (error) throw error;
+      setCollaborators(data || []);
+    } catch (error) {
+      console.error('Error fetching collaborators:', error);
     }
   };
 
@@ -546,6 +568,33 @@ export default function PropertyDetails() {
                     )}
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Collaborators Info */}
+          {collaborators.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Дополнительные договорники</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {collaborators.map((collaborator) => (
+                  <div key={collaborator.id} className="flex items-center gap-3 pb-3 border-b last:border-0 last:pb-0">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={collaborator.profiles?.avatar_url || undefined} alt={collaborator.profiles?.full_name} />
+                      <AvatarFallback>
+                        {collaborator.profiles?.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{collaborator.profiles?.full_name}</p>
+                      {collaborator.profiles?.phone && (
+                        <p className="text-xs text-muted-foreground">{collaborator.profiles.phone}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </CardContent>
             </Card>
           )}
