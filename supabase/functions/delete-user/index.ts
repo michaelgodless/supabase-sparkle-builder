@@ -40,14 +40,14 @@ serve(async (req) => {
     }
 
     // Check if user has super_admin role
-    const { data: roles, error: rolesError } = await supabaseAdmin
+    const { data: roles, error: roleCheckError } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
       .eq('role', 'super_admin')
       .single()
 
-    if (rolesError || !roles) {
+    if (roleCheckError || !roles) {
       return new Response(
         JSON.stringify({ error: 'Недостаточно прав' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -71,13 +71,41 @@ serve(async (req) => {
       )
     }
 
-    // Delete the user from auth.users (this will cascade to profiles and user_roles)
+    // First, delete user roles
+    const { error: rolesError } = await supabaseAdmin
+      .from('user_roles')
+      .delete()
+      .eq('user_id', userId)
+
+    if (rolesError) {
+      console.error('Error deleting user roles:', rolesError)
+      return new Response(
+        JSON.stringify({ error: 'Ошибка удаления ролей пользователя' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Delete user profile
+    const { error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .delete()
+      .eq('id', userId)
+
+    if (profileError) {
+      console.error('Error deleting profile:', profileError)
+      return new Response(
+        JSON.stringify({ error: 'Ошибка удаления профиля' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Finally, delete the user from auth.users
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId)
 
     if (deleteError) {
-      console.error('Error deleting user:', deleteError)
+      console.error('Error deleting user from auth:', deleteError)
       return new Response(
-        JSON.stringify({ error: deleteError.message }),
+        JSON.stringify({ error: 'Ошибка удаления пользователя из системы аутентификации' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -93,7 +121,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in delete-user function:', error)
     return new Response(
-      JSON.stringify({ error: error.message || 'Internal server error' }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
