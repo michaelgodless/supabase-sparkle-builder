@@ -339,7 +339,7 @@ const PropertyPublicDetails = () => {
                   return (
                     <div>
                       <CardTitle className="text-3xl font-bold text-primary">{original}</CardTitle>
-                      {converted && <p className="text-lg text-muted-foreground mt-2">{converted}</p>}
+                      {converted && <p className="text-sm text-muted-foreground mt-2">{converted}</p>}
                     </div>
                   );
                 })()}

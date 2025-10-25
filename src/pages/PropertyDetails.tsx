@@ -527,7 +527,7 @@ export default function PropertyDetails() {
                 return (
                   <div>
                     <div className="text-3xl font-bold text-primary">{original}</div>
-                    {converted && <div className="text-lg text-muted-foreground mt-2">{converted}</div>}
+                    {converted && <div className="text-sm text-muted-foreground mt-2">{converted}</div>}
                   </div>
                 );
               })()}
