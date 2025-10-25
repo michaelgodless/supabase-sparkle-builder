@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowLeft, MapPin, Home, Maximize, Phone, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { formatPriceDisplay } from "@/lib/priceUtils";
 import navigatorLogo from "@/assets/navigator-house-logo.png";
 import { toast } from "sonner";
 
@@ -16,6 +17,7 @@ interface PropertyDetails {
   property_number: number;
   price: number;
   currency: string;
+  exchange_rate: number | null;
   property_size: number | null;
   property_lot_size: number | null;
   property_rooms: string | null;
@@ -61,6 +63,7 @@ const PropertyPublicDetails = () => {
           property_number,
           price,
           currency,
+          exchange_rate,
           property_size,
           property_lot_size,
           property_rooms,
@@ -120,10 +123,6 @@ const PropertyPublicDetails = () => {
     } catch (error) {
       console.error("Error fetching collaborators:", error);
     }
-  };
-
-  const formatPrice = (price: number, currency: string) => {
-    return new Intl.NumberFormat("ru-RU").format(price) + " " + currency;
   };
 
   const handleContactRequest = () => {
@@ -336,7 +335,7 @@ const PropertyPublicDetails = () => {
             <Card className="sticky top-24">
               <CardHeader>
                 <CardTitle className="text-3xl font-bold text-primary">
-                  {formatPrice(property.price, property.currency)}
+                  {formatPriceDisplay(property.price, property.currency, property.exchange_rate)}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">

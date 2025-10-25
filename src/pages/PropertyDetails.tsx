@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Building2, MapPin, Ruler, Home, Calendar, Phone, User, DollarSign, Star, Edit } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { formatPriceDisplay } from '@/lib/priceUtils';
 
 export default function PropertyDetails() {
   const { id } = useParams<{ id: string }>();
@@ -521,10 +522,9 @@ export default function PropertyDetails() {
           <Card>
             <CardHeader>
               <CardTitle className="text-sm text-muted-foreground">Цена</CardTitle>
-              <div className="text-4xl font-bold text-primary">
-                ${property.price.toLocaleString()}
+              <div className="text-3xl font-bold text-primary">
+                {formatPriceDisplay(property.price, property.currency, property.exchange_rate)}
               </div>
-              <p className="text-sm text-muted-foreground">{property.currency}</p>
             </CardHeader>
           </Card>
 

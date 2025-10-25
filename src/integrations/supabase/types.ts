@@ -390,6 +390,7 @@ export type Database = {
           deleted_by: string | null
           description: string | null
           documents: string[] | null
+          exchange_rate: number | null
           furniture: string[] | null
           id: string
           is_demo: boolean | null
@@ -433,6 +434,7 @@ export type Database = {
           deleted_by?: string | null
           description?: string | null
           documents?: string[] | null
+          exchange_rate?: number | null
           furniture?: string[] | null
           id?: string
           is_demo?: boolean | null
@@ -476,6 +478,7 @@ export type Database = {
           deleted_by?: string | null
           description?: string | null
           documents?: string[] | null
+          exchange_rate?: number | null
           furniture?: string[] | null
           id?: string
           is_demo?: boolean | null

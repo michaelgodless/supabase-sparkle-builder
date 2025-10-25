@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Search, MapPin, Home, Filter } from "lucide-react";
 import { ROOM_OPTIONS } from "@/types/property";
+import { formatPriceDisplay } from "@/lib/priceUtils";
 import navigatorLogo from "@/assets/navigator-house-logo.png";
 
 interface Property {
@@ -16,6 +17,7 @@ interface Property {
   property_number: number;
   price: number;
   currency: string;
+  exchange_rate: number | null;
   property_size: number | null;
   property_rooms: string | null;
   property_area_id: string | null;
@@ -90,6 +92,7 @@ const Properties = () => {
           property_number,
           price,
           currency,
+          exchange_rate,
           property_size,
           property_rooms,
           property_area_id,
@@ -150,10 +153,6 @@ const Properties = () => {
 
     return matchesSearch && matchesAction && matchesCategory && matchesSubcategory && matchesArea && matchesRooms && matchesCondition && matchesDeveloper && matchesPrice;
   });
-
-  const formatPrice = (price: number, currency: string) => {
-    return new Intl.NumberFormat("ru-RU").format(price) + " " + currency;
-  };
 
   if (loading) {
     return (
@@ -468,7 +467,7 @@ const Properties = () => {
                     )}
                     <div className="pt-2 border-t">
                       <p className="text-2xl font-bold text-primary">
-                        {formatPrice(property.price, property.currency)}
+                        {formatPriceDisplay(property.price, property.currency, property.exchange_rate)}
                       </p>
                     </div>
                   </CardContent>

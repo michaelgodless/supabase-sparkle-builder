@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { formatPriceDisplay } from '@/lib/priceUtils';
 
 type PropertyStatus = Database['public']['Enums']['property_status'];
 
@@ -21,6 +22,7 @@ interface PropertyWithPhotos extends Property {
   property_conditions?: { name: string; code: string };
   is_featured?: boolean;
   featured_order?: number;
+  exchange_rate?: number | null;
 }
 
 export default function MyProperties() {
@@ -378,7 +380,7 @@ export default function MyProperties() {
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Цена:</span>
                     <span className="font-semibold">
-                      {property.price.toLocaleString()} {property.currency}
+                      {formatPriceDisplay(property.price, property.currency, property.exchange_rate)}
                     </span>
                   </div>
                   {property.property_size && (

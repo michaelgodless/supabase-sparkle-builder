@@ -71,6 +71,7 @@ export default function PropertyForm() {
     price: "",
     price_in_hand: "",
     currency: "USD",
+    exchange_rate: "",
     description: "",
     owner_name: "",
     owner_contacts: "",
@@ -139,6 +140,7 @@ export default function PropertyForm() {
           price: data.price?.toString() || "",
           price_in_hand: data.price_in_hand?.toString() || "",
           currency: data.currency || "USD",
+          exchange_rate: data.exchange_rate?.toString() || "",
           description: data.description || "",
           owner_name: data.owner_name || "",
           owner_contacts: data.owner_contacts || "",
@@ -313,6 +315,7 @@ export default function PropertyForm() {
       !formData.property_size ||
       !formData.address ||
       !formData.price ||
+      !formData.exchange_rate ||
       !formData.owner_name ||
       !formData.owner_contacts
     ) {
@@ -351,6 +354,7 @@ export default function PropertyForm() {
         price: parseFloat(formData.price),
         price_in_hand: formData.price_in_hand ? parseFloat(formData.price_in_hand) : null,
         currency: formData.currency,
+        exchange_rate: formData.exchange_rate ? parseFloat(formData.exchange_rate) : null,
         description: formData.description || null,
         owner_name: formData.owner_name,
         owner_contacts: formData.owner_contacts,
@@ -729,7 +733,7 @@ export default function PropertyForm() {
             </div>
 
             {/* Группа 4: Цена */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="price">Цена *</Label>
                 <Input
@@ -739,17 +743,6 @@ export default function PropertyForm() {
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                   required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="price_in_hand">Цена на руки</Label>
-                <Input
-                  id="price_in_hand"
-                  type="number"
-                  step="0.01"
-                  value={formData.price_in_hand}
-                  onChange={(e) => setFormData({ ...formData, price_in_hand: e.target.value })}
                 />
               </div>
 
@@ -768,6 +761,30 @@ export default function PropertyForm() {
                     <SelectItem value="KGS">KGS</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="exchange_rate">Курс {formData.currency} к сому *</Label>
+                <Input
+                  id="exchange_rate"
+                  type="number"
+                  step="0.01"
+                  placeholder="Например: 89.50"
+                  value={formData.exchange_rate}
+                  onChange={(e) => setFormData({ ...formData, exchange_rate: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="price_in_hand">Цена на руки</Label>
+                <Input
+                  id="price_in_hand"
+                  type="number"
+                  step="0.01"
+                  value={formData.price_in_hand}
+                  onChange={(e) => setFormData({ ...formData, price_in_hand: e.target.value })}
+                />
               </div>
             </div>
 
