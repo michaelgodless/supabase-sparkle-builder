@@ -105,18 +105,20 @@ const PropertyPublicDetails = () => {
 
     try {
       const { data, error } = await supabase
-        .from('property_collaborators')
-        .select(`
+        .from("property_collaborators")
+        .select(
+          `
           id,
           user_id,
           profiles:user_id(full_name, phone, email, avatar_url)
-        `)
-        .eq('property_id', id);
+        `,
+        )
+        .eq("property_id", id);
 
       if (error) throw error;
       setCollaborators(data || []);
     } catch (error) {
-      console.error('Error fetching collaborators:', error);
+      console.error("Error fetching collaborators:", error);
     }
   };
 
@@ -242,7 +244,9 @@ const PropertyPublicDetails = () => {
                     <div className="relative aspect-video bg-muted rounded-lg overflow-hidden group">
                       <img src={selectedPhoto} alt="Property" className="w-full h-full object-cover" />
                       <button
-                        onClick={() => openFullscreen(property.property_photos.findIndex(p => p.photo_url === selectedPhoto))}
+                        onClick={() =>
+                          openFullscreen(property.property_photos.findIndex((p) => p.photo_url === selectedPhoto))
+                        }
                         className="absolute top-4 right-4 p-2 bg-background/80 hover:bg-background rounded-lg transition-all opacity-0 group-hover:opacity-100"
                       >
                         <Maximize className="h-5 w-5" />
@@ -364,43 +368,19 @@ const PropertyPublicDetails = () => {
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={manager.avatar_url || undefined} alt={manager.full_name} />
                       <AvatarFallback>
-                        {manager.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
+                        {manager.full_name
+                          ?.split(" ")
+                          .map((n: string) => n[0])
+                          .join("")
+                          .toUpperCase()
+                          .slice(0, 2)}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <p className="text-sm font-medium">{manager.full_name}</p>
-                      {manager.phone && (
-                        <p className="text-xs text-muted-foreground">{manager.phone}</p>
-                      )}
+                      {manager.phone && <p className="text-xs text-muted-foreground">{manager.phone}</p>}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Collaborators Info */}
-            {collaborators.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Дополнительные договорники</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {collaborators.map((collaborator) => (
-                    <div key={collaborator.id} className="flex items-center gap-3 pb-3 border-b last:border-0 last:pb-0">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={collaborator.profiles?.avatar_url || undefined} alt={collaborator.profiles?.full_name} />
-                        <AvatarFallback>
-                          {collaborator.profiles?.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{collaborator.profiles?.full_name}</p>
-                        {collaborator.profiles?.phone && (
-                          <p className="text-xs text-muted-foreground">{collaborator.profiles.phone}</p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
                 </CardContent>
               </Card>
             )}
