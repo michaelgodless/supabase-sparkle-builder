@@ -54,7 +54,7 @@ const Landing = () => {
               }}
               src={navigatorLogo}
               alt="Navigator House"
-              className="h-24 md:h-24 w-auto mb-2 md:mb-4 drop-shadow-2xl"
+              className="h-48 md:h-48 w-auto mb-2 md:mb-4 drop-shadow-2xl"
             />
 
             <motion.h1
