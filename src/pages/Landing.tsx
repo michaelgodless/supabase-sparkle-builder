@@ -430,67 +430,7 @@ const Landing = () => {
           </div>
         </div>
       </section>
-
-      {/* CTA Section */}
-      <motion.section initial={{
-      opacity: 0,
-      y: 60
-    }} whileInView={{
-      opacity: 1,
-      y: 0
-    }} viewport={{
-      once: true,
-      margin: "-100px"
-    }} transition={{
-      duration: 0.6
-    }} className="py-12 md:py-20 bg-gradient-to-br from-primary via-primary-hover to-primary/90 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItaDJWMzZ6bS0yIDBoLTJ2Mmgydi0yem0tMiAwdi0yaC0ydjJoMnptMC0yaDJ2LTJoLTJ2MnptMiAwVjMwaDJ2MmgtMnptMCAyaDJ2Mmgtdi0yem0yIDB2Mmgydi0yaC0yem0wLTJ2LTJoMnYyaC0yem0yLTJoMnYyaC0ydi0yem0wIDJ2Mmgydi0yaC0yem0yIDBoMnYyaC0ydi0yem0wLTJ2LTJoMnYyaC0yem0yLTJoMnYyaC0ydi0yem0wIDJ2Mmgydi0yaC0yem0yIDBoMnYyaC0ydi0yeiIvPjwvZz48L2c+PC9zdmc+')] opacity-20"></div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div initial={{
-          opacity: 0,
-          y: 30
-        }} whileInView={{
-          opacity: 1,
-          y: 0
-        }} viewport={{
-          once: true
-        }} transition={{
-          duration: 0.6,
-          delay: 0.2
-        }} className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white px-4">
-              Готовы найти недвижимость мечты?
-            </h2>
-            <p className="text-base md:text-xl text-white/90 px-4">
-              Наши специалисты помогут вам на каждом этапе
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center px-4">
-              <motion.div whileHover={{
-              scale: 1.05
-            }} whileTap={{
-              scale: 0.95
-            }}>
-                <Button size="lg" onClick={() => navigate('/properties')} className="px-8 md:px-10 py-6 md:py-7 text-lg md:text-xl shadow-2xl hover:shadow-secondary/50 transition-all w-full sm:w-auto text-yellow-50 bg-yellow-600 hover:bg-yellow-500">
-                  Смотреть объекты
-                  <ArrowRight className="ml-2 h-5 md:h-6 w-5 md:w-6" />
-                </Button>
-              </motion.div>
-              <motion.div whileHover={{
-              scale: 1.05
-            }} whileTap={{
-              scale: 0.95
-            }}>
-                <Button size="lg" variant="outline" onClick={() => navigate('/login')} className="bg-white/10 hover:bg-white/20 text-white border-white/30 px-8 md:px-10 py-6 md:py-7 text-lg md:text-xl backdrop-blur-sm w-full sm:w-auto">
-                  Войти
-                </Button>
-              </motion.div>
-            </div>
-          </motion.div>
-        </div>
-      </motion.section>
-
-      {/* Contacts Section */}
+ {/* Contacts Section */}
       <motion.section
         initial={{ opacity: 0, y: 60 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -576,6 +516,66 @@ const Landing = () => {
           </motion.div>
         </div>
       </motion.section>
+      {/* CTA Section */}
+      <motion.section initial={{
+      opacity: 0,
+      y: 60
+    }} whileInView={{
+      opacity: 1,
+      y: 0
+    }} viewport={{
+      once: true,
+      margin: "-100px"
+    }} transition={{
+      duration: 0.6
+    }} className="py-12 md:py-20 bg-gradient-to-br from-primary via-primary-hover to-primary/90 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItaDJWMzZ6bS0yIDBoLTJ2Mmgydi0yem0tMiAwdi0yaC0ydjJoMnptMC0yaDJ2LTJoLTJ2MnptMiAwVjMwaDJ2MmgtMnptMCAyaDJ2Mmgtdi0yem0yIDB2Mmgydi0yaC0yem0wLTJ2LTJoMnYyaC0yem0yLTJoMnYyaC0ydi0yem0wIDJ2Mmgydi0yaC0yem0yIDBoMnYyaC0ydi0yem0wLTJ2LTJoMnYyaC0yem0yLTJoMnYyaC0ydi0yem0wIDJ2Mmgydi0yaC0yem0yIDBoMnYyaC0ydi0yeiIvPjwvZz48L2c+PC9zdmc+')] opacity-20"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div initial={{
+          opacity: 0,
+          y: 30
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.6,
+          delay: 0.2
+        }} className="max-w-3xl mx-auto text-center space-y-6 md:space-y-8">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white px-4">
+              Готовы найти недвижимость мечты?
+            </h2>
+            <p className="text-base md:text-xl text-white/90 px-4">
+              Наши специалисты помогут вам на каждом этапе
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center px-4">
+              <motion.div whileHover={{
+              scale: 1.05
+            }} whileTap={{
+              scale: 0.95
+            }}>
+                <Button size="lg" onClick={() => navigate('/properties')} className="px-8 md:px-10 py-6 md:py-7 text-lg md:text-xl shadow-2xl hover:shadow-secondary/50 transition-all w-full sm:w-auto text-yellow-50 bg-yellow-600 hover:bg-yellow-500">
+                  Смотреть объекты
+                  <ArrowRight className="ml-2 h-5 md:h-6 w-5 md:w-6" />
+                </Button>
+              </motion.div>
+              <motion.div whileHover={{
+              scale: 1.05
+            }} whileTap={{
+              scale: 0.95
+            }}>
+                <Button size="lg" variant="outline" onClick={() => navigate('/login')} className="bg-white/10 hover:bg-white/20 text-white border-white/30 px-8 md:px-10 py-6 md:py-7 text-lg md:text-xl backdrop-blur-sm w-full sm:w-auto">
+                  Войти
+                </Button>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+      </motion.section>
+
+     
 
       {/* Footer */}
       <motion.footer initial={{
