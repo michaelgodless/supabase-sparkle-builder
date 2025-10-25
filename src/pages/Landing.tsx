@@ -431,7 +431,6 @@ const Landing = () => {
         </div>
       </section>
  {/* Contacts Section */}
-{/* Contacts Section */}
 <motion.section
   initial={{ opacity: 0, y: 60 }}
   whileInView={{ opacity: 1, y: 0 }}
@@ -524,7 +523,7 @@ const Landing = () => {
         </motion.div>
       </motion.div>
 
-      {/* Right: Google Maps */}
+      {/* Right: 2GIS Map */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -532,20 +531,11 @@ const Landing = () => {
         transition={{ duration: 0.6 }}
         className="w-full h-[400px] md:h-[450px] rounded-xl overflow-hidden shadow-lg"
       >
-        <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2920.292501520029!2d74.58806997616838!3d42.85742190505812!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x389ec9a0d3e78cc9%3A0x4bb2e760c2911bc1!2z0JzQtdC00LjRhtC40Y8g0JzQsNC70YzRjiAyLCDQkdC40LvQs9C-0YDQvtC20LjQvdGB0LrQuNC5INCQ0YPRgdGC0Yw!5e0!3m2!1sru!2skg!4v1730000000000!5m2!1sru!2skg"
-          width="100%"
-          height="100%"
-          style={{ border: 0 }}
-          allowFullScreen=""
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-        ></iframe>
+  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d182.8670441593539!2d74.63967833422474!3d42.83330263457077!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x389eb67d8eaf5739%3A0xa19fbf757fc240d1!2zMiDRg9C70LjRhtCwINCc0L7Qu9C00L7QutGD0LvQvtCy0LAsINCR0LjRiNC60LXQug!5e0!3m2!1sru!2skg!4v1761415987422!5m2!1sru!2skg" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </motion.div>
     </div>
   </div>
 </motion.section>
-
 
       {/* CTA Section */}
       <motion.section initial={{
