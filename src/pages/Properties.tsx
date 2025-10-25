@@ -11,6 +11,7 @@ import { Search, MapPin, Home, Filter } from "lucide-react";
 import { ROOM_OPTIONS } from "@/types/property";
 import { formatPrice } from "@/lib/priceUtils";
 import navigatorLogo from "@/assets/navigator-house-logo.png";
+import { useInView } from "react-intersection-observer";
 
 interface Property {
   id: string;
@@ -33,6 +34,8 @@ interface Property {
   property_photos: { photo_url: string }[];
 }
 
+const ITEMS_PER_LOAD = 12;
+
 const Properties = () => {
   const navigate = useNavigate();
   const [properties, setProperties] = useState<Property[]>([]);
@@ -48,6 +51,7 @@ const Properties = () => {
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
   const [showFilters, setShowFilters] = useState(false);
+  const [displayedCount, setDisplayedCount] = useState(ITEMS_PER_LOAD);
   
   const [actionCategories, setActionCategories] = useState<any[]>([]);
   const [propertyCategories, setPropertyCategories] = useState<any[]>([]);
@@ -55,6 +59,10 @@ const Properties = () => {
   const [areas, setAreas] = useState<any[]>([]);
   const [conditions, setConditions] = useState<any[]>([]);
   const [developers, setDevelopers] = useState<any[]>([]);
+
+  const { ref, inView } = useInView({
+    threshold: 0,
+  });
 
   useEffect(() => {
     fetchProperties();
@@ -153,6 +161,21 @@ const Properties = () => {
 
     return matchesSearch && matchesAction && matchesCategory && matchesSubcategory && matchesArea && matchesRooms && matchesCondition && matchesDeveloper && matchesPrice;
   });
+
+  const visibleProperties = filteredProperties.slice(0, displayedCount);
+  const hasMore = displayedCount < filteredProperties.length;
+
+  // Reset displayed count when filters change
+  useEffect(() => {
+    setDisplayedCount(ITEMS_PER_LOAD);
+  }, [searchTerm, actionFilter, categoryFilter, subcategoryFilter, areaFilter, roomsFilter, conditionFilter, developerFilter, minPrice, maxPrice]);
+
+  // Load more when scrolling to bottom
+  useEffect(() => {
+    if (inView && hasMore && !loading) {
+      setDisplayedCount((prev) => prev + ITEMS_PER_LOAD);
+    }
+  }, [inView, hasMore, loading]);
 
   if (loading) {
     return (
@@ -413,73 +436,88 @@ const Properties = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProperties.map((property) => (
-                <Card
-                  key={property.id}
-                  className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                  onClick={() => navigate(`/properties/${property.id}/public`)}
-                >
-                  <div className="aspect-video bg-muted relative overflow-hidden">
-                    {property.property_photos?.[0] ? (
-                      <img
-                        src={property.property_photos[0].photo_url}
-                        alt={`Объект №${property.property_number}`}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full">
-                        <Home className="h-16 w-16 text-muted-foreground" />
+            <>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {visibleProperties.map((property) => (
+                  <Card
+                    key={property.id}
+                    className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => navigate(`/properties/${property.id}/public`)}
+                  >
+                    <div className="aspect-video bg-muted relative overflow-hidden">
+                      {property.property_photos?.[0] ? (
+                        <img
+                          src={property.property_photos[0].photo_url}
+                          alt={`Объект №${property.property_number}`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full">
+                          <Home className="h-16 w-16 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="absolute top-2 right-2">
+                        <Badge className="bg-primary text-primary-foreground">
+                          {property.property_action_categories?.name || "—"}
+                        </Badge>
                       </div>
-                    )}
-                    <div className="absolute top-2 right-2">
-                      <Badge className="bg-primary text-primary-foreground">
-                        {property.property_action_categories?.name || "—"}
-                      </Badge>
                     </div>
-                  </div>
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-2">
-                      <CardTitle className="text-xl">
-                        Объект №{property.property_number}
-                      </CardTitle>
-                      <Badge variant="secondary">
-                        {property.property_categories?.name || "—"}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <MapPin className="h-4 w-4" />
-                      <span className="text-sm">
-                        {property.property_areas?.name || "Район не указан"}
-                      </span>
-                    </div>
-                    {property.property_size && (
-                      <p className="text-sm text-muted-foreground">
-                        Площадь: {property.property_size} м²
-                      </p>
-                    )}
-                    {property.property_rooms && (
-                      <p className="text-sm text-muted-foreground">
-                        Комнат: {property.property_rooms}
-                      </p>
-                    )}
-                    <div className="pt-2 border-t">
-                      {(() => {
-                        const { original, converted } = formatPrice(property.price, property.currency, property.exchange_rate);
-                        return (
-                          <div>
-                            <p className="text-2xl font-bold text-primary">{original}</p>
-                            {converted && <p className="text-sm text-muted-foreground mt-1">{converted}</p>}
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <CardHeader>
+                      <div className="flex items-start justify-between gap-2">
+                        <CardTitle className="text-xl">
+                          Объект №{property.property_number}
+                        </CardTitle>
+                        <Badge variant="secondary">
+                          {property.property_categories?.name || "—"}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <MapPin className="h-4 w-4" />
+                        <span className="text-sm">
+                          {property.property_areas?.name || "Район не указан"}
+                        </span>
+                      </div>
+                      {property.property_size && (
+                        <p className="text-sm text-muted-foreground">
+                          Площадь: {property.property_size} м²
+                        </p>
+                      )}
+                      {property.property_rooms && (
+                        <p className="text-sm text-muted-foreground">
+                          Комнат: {property.property_rooms}
+                        </p>
+                      )}
+                      <div className="pt-2 border-t">
+                        {(() => {
+                          const { original, converted } = formatPrice(property.price, property.currency, property.exchange_rate);
+                          return (
+                            <div>
+                              <p className="text-2xl font-bold text-primary">{original}</p>
+                              {converted && <p className="text-sm text-muted-foreground mt-1">{converted}</p>}
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              
+              {/* Loading indicator and sentinel */}
+              {hasMore && (
+                <div ref={ref} className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+                </div>
+              )}
+              
+              {!hasMore && visibleProperties.length > 0 && (
+                <p className="text-center text-muted-foreground py-8">
+                  Показаны все объекты ({filteredProperties.length})
+                </p>
+              )}
+            </>
           )}
         </div>
       </section>

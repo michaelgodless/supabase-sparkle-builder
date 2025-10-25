@@ -9,6 +9,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Pencil, Trash2, Upload } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 type ReferenceItem = {
   id: string;
@@ -24,6 +33,8 @@ const REFERENCE_LABELS = {
   property_areas: "Районы",
 };
 
+const ITEMS_PER_PAGE = 20;
+
 export default function ReferenceDataManager() {
   const [activeTab, setActiveTab] = useState<ReferenceType>("property_series");
   const [items, setItems] = useState<ReferenceItem[]>([]);
@@ -32,10 +43,12 @@ export default function ReferenceDataManager() {
   const [newItemName, setNewItemName] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetchItems(activeTab);
     setSearchQuery("");
+    setCurrentPage(1);
   }, [activeTab]);
 
   const fetchItems = async (type: ReferenceType) => {
@@ -211,6 +224,16 @@ export default function ReferenceDataManager() {
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedItems = filteredItems.slice(startIndex, endIndex);
+
+  // Reset to first page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-4 px-4 md:py-8">
@@ -336,7 +359,7 @@ export default function ReferenceDataManager() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredItems.map((item) => (
+                      paginatedItems.map((item) => (
                         <TableRow key={item.id}>
                           <TableCell>{item.name}</TableCell>
                           <TableCell>
@@ -369,6 +392,56 @@ export default function ReferenceDataManager() {
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-4">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                          className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        />
+                      </PaginationItem>
+
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                        if (
+                          page === 1 ||
+                          page === totalPages ||
+                          (page >= currentPage - 1 && page <= currentPage + 1)
+                        ) {
+                          return (
+                            <PaginationItem key={page}>
+                              <PaginationLink
+                                onClick={() => setCurrentPage(page)}
+                                isActive={currentPage === page}
+                                className="cursor-pointer"
+                              >
+                                {page}
+                              </PaginationLink>
+                            </PaginationItem>
+                          );
+                        } else if (page === currentPage - 2 || page === currentPage + 2) {
+                          return (
+                            <PaginationItem key={page}>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          );
+                        }
+                        return null;
+                      })}
+
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                          className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
             </TabsContent>
           ))}
         </Tabs>
