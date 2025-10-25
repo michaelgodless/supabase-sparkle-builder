@@ -431,91 +431,119 @@ const Landing = () => {
         </div>
       </section>
  {/* Contacts Section */}
-      <motion.section
-        initial={{ opacity: 0, y: 60 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.6 }}
-        className="py-12 md:py-20 bg-muted/30"
+<motion.section
+  initial={{ opacity: 0, y: 60 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true, margin: "-100px" }}
+  transition={{ duration: 0.6 }}
+  className="py-12 md:py-20 bg-muted/30"
+>
+  <div className="container mx-auto px-4">
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6 }}
+      className="text-center mb-8 md:mb-12"
+    >
+      <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3 md:mb-4 px-4">
+        Контакты
+      </h2>
+      <p className="text-base md:text-xl text-muted-foreground px-4">
+        Свяжитесь с нами любым удобным способом
+      </p>
+    </motion.div>
+
+    <div className="grid md:grid-cols-2 gap-10 items-start">
+      {/* Left: Phone Numbers and Instagram */}
+      <motion.div
+        initial={{}}
+        whileInView={{ transition: { staggerChildren: 0.1 } }}
+        viewport={{ once: true }}
+        className="space-y-6"
       >
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-8 md:mb-12"
-          >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3 md:mb-4 px-4">
-              Контакты
-            </h2>
-            <p className="text-base md:text-xl text-muted-foreground px-4">
-              Свяжитесь с нами любым удобным способом
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{}}
-            whileInView={{ transition: { staggerChildren: 0.1 } }}
-            viewport={{ once: true }}
-            className="max-w-2xl mx-auto space-y-6"
-          >
-            {/* Phone Numbers */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="space-y-3"
-            >
-              {[
-                "+996 506 990 199",
-                "+996 506 991 099",
-                "+996 506 990 599",
-                "+996 506 880 799",
-              ].map((phone, index) => (
-                <motion.a
-                  key={index}
-                  href={`tel:${phone.replace(/\s/g, "")}`}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  whileHover={{ x: 10, scale: 1.02 }}
-                  className="flex items-center gap-3 md:gap-4 p-4 bg-card border-2 border-border hover:border-primary/50 rounded-lg transition-all group"
-                >
-                  <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                    <Phone className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                  </div>
-                  <span className="text-base md:text-lg font-medium text-foreground">
-                    {phone}
-                  </span>
-                </motion.a>
-              ))}
-            </motion.div>
-
-            {/* Instagram Link */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="pt-4"
-            >
+        {/* Phone Numbers */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="space-y-3"
+        >
+          {[
+            "+996 506 990 199",
+            "+996 506 991 099",
+            "+996 506 990 599",
+            "+996 506 880 799",
+          ].map((phone, index) => {
+            const cleanPhone = phone.replace(/\s/g, "");
+            const whatsappLink = `https://wa.me/${cleanPhone.replace("+", "")}`;
+            return (
               <motion.a
-                href="https://www.instagram.com/navigatorhouse?igsh=b3E3dWZzOGw2bnFq"
+                key={index}
+                href={whatsappLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="flex items-center justify-center gap-3 p-5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all"
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ x: 10, scale: 1.02 }}
+                className="flex items-center gap-3 md:gap-4 p-4 bg-card border-2 border-border hover:border-green-500/50 rounded-lg transition-all group"
               >
-                <Instagram className="h-6 w-6" />
-                <span className="text-lg font-semibold">Мы в Instagram</span>
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-green-500/10 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-green-500/20 transition-colors">
+                  <Phone className="h-5 w-5 md:h-6 md:w-6 text-green-600" />
+                </div>
+                <span className="text-base md:text-lg font-medium text-foreground">
+                  {phone}
+                </span>
               </motion.a>
-            </motion.div>
-          </motion.div>
-        </div>
-      </motion.section>
+            );
+          })}
+        </motion.div>
+
+        {/* Instagram Link */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="pt-4"
+        >
+          <motion.a
+            href="https://www.instagram.com/navigatorhouse?igsh=b3E3dWZzOGw2bnFq"
+            target="_blank"
+            rel="noopener noreferrer"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center justify-center gap-3 p-5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all"
+          >
+            <Instagram className="h-6 w-6" />
+            <span className="text-lg font-semibold">Мы в Instagram</span>
+          </motion.a>
+        </motion.div>
+      </motion.div>
+
+      {/* Right: 2GIS Map */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="w-full h-[400px] md:h-[450px] rounded-xl overflow-hidden shadow-lg"
+      >
+        <iframe
+          src="https://2gis.kg/bishkek/geo/15763263915799688?m=74.586678%2C42.857444%2F17"
+          width="100%"
+          height="100%"
+          allowFullScreen
+          loading="lazy"
+          className="border-0 w-full h-full"
+        ></iframe>
+      </motion.div>
+    </div>
+  </div>
+</motion.section>
+
       {/* CTA Section */}
       <motion.section initial={{
       opacity: 0,
