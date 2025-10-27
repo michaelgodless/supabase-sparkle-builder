@@ -344,33 +344,34 @@ export default function Admin() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Панель администратора</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Панель администратора</h1>
+        <p className="text-sm md:text-base text-muted-foreground">
           Управление пользователями, ролями и контентом
         </p>
       </div>
 
-      <Tabs defaultValue="users" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="users">Пользователи</TabsTrigger>
-          <TabsTrigger value="featured">Избранное на главной</TabsTrigger>
+      <Tabs defaultValue="users" className="space-y-4 md:space-y-6">
+        <TabsList className="w-full grid grid-cols-2">
+          <TabsTrigger value="users" className="text-xs md:text-sm">Пользователи</TabsTrigger>
+          <TabsTrigger value="featured" className="text-xs md:text-sm">Избранное</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="users" className="space-y-6">
-          <div className="flex justify-between items-start">
+        <TabsContent value="users" className="space-y-4 md:space-y-6">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-foreground">Управление пользователями</h2>
-              <p className="text-muted-foreground mt-1">
+              <h2 className="text-xl md:text-2xl font-bold text-foreground">Управление пользователями</h2>
+              <p className="text-sm text-muted-foreground mt-1">
                 Администрирование пользователей и ролей
               </p>
             </div>
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-primary hover:opacity-90">
+            <Button className="bg-gradient-primary hover:opacity-90 w-full md:w-auto">
               <UserPlus className="h-4 w-4 mr-2" />
-              Создать пользователя
+              <span className="hidden sm:inline">Создать пользователя</span>
+              <span className="sm:hidden">Создать</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
@@ -448,19 +449,19 @@ export default function Admin() {
         </Dialog>
           </div>
 
-          <Card className="p-6">
-        <div className="flex gap-4 mb-6">
+          <Card className="p-3 md:p-6">
+        <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-4 md:mb-6">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Поиск по имени или email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 text-sm"
             />
           </div>
           <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-full sm:w-[180px] text-sm">
               <SelectValue placeholder="Фильтр по роли" />
             </SelectTrigger>
             <SelectContent>
@@ -472,7 +473,8 @@ export default function Admin() {
           </Select>
         </div>
 
-        <div className="rounded-md border">
+        {/* Desktop Table View */}
+        <div className="hidden lg:block rounded-md border overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -619,6 +621,143 @@ export default function Admin() {
               )}
             </TableBody>
           </Table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="lg:hidden space-y-3">
+          {filteredUsers.length === 0 ? (
+            <Card className="p-6 text-center text-muted-foreground">
+              Пользователи не найдены
+            </Card>
+          ) : (
+            filteredUsers.map((user) => (
+              <Card key={user.id} className="p-4">
+                <div className="flex items-start gap-3 mb-3">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={user.avatar_url || undefined} alt={user.full_name} />
+                    <AvatarFallback>
+                      {user.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-sm truncate">{user.full_name}</h3>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    {user.phone && (
+                      <p className="text-xs text-muted-foreground">{user.phone}</p>
+                    )}
+                  </div>
+                  {user.is_active ? (
+                    <Badge variant="default" className="text-xs">Активен</Badge>
+                  ) : (
+                    <Badge variant="secondary" className="text-xs">Неактивен</Badge>
+                  )}
+                </div>
+
+                <div className="flex gap-1 flex-wrap mb-3">
+                  {user.roles.length === 0 ? (
+                    <span className="text-xs text-muted-foreground">Нет ролей</span>
+                  ) : (
+                    user.roles.map((role, idx) => (
+                      <Badge
+                        key={idx}
+                        variant={getRoleBadgeVariant(role.role) as any}
+                        className="cursor-pointer text-xs"
+                        onClick={() => removeRole(user.id, role.role)}
+                      >
+                        {getRoleLabel(role.role)} ×
+                      </Badge>
+                    ))
+                  )}
+                </div>
+
+                <div className="flex gap-2 flex-wrap">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="flex-1 text-xs">
+                        <Shield className="h-3 w-3 mr-1" />
+                        Роль
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-[90vw]">
+                      <DialogHeader>
+                        <DialogTitle className="text-base">Назначить роль</DialogTitle>
+                        <DialogDescription className="text-sm">
+                          Выберите роль для {user.full_name}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-2">
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-sm"
+                          onClick={() => assignRole(user.id, 'super_admin')}
+                        >
+                          Супер Админ
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-sm"
+                          onClick={() => assignRole(user.id, 'manager')}
+                        >
+                          Менеджер
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-sm"
+                          onClick={() => assignRole(user.id, 'intern')}
+                        >
+                          Стажер
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 text-xs"
+                    onClick={() => toggleUserStatus(user.id, user.is_active)}
+                  >
+                    {user.is_active ? (
+                      <>
+                        <UserX className="h-3 w-3 mr-1" />
+                        Деактивировать
+                      </>
+                    ) : (
+                      <>
+                        <UserCheck className="h-3 w-3 mr-1" />
+                        Активировать
+                      </>
+                    )}
+                  </Button>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="text-xs">
+                        <Trash2 className="h-3 w-3 text-destructive" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="max-w-[90vw]">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-base">Удалить пользователя?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-sm">
+                          Вы уверены, что хотите удалить {user.full_name}? Это действие нельзя отменить.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                        <AlertDialogCancel className="text-sm">Отмена</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => deleteUser(user.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-sm"
+                        >
+                          Удалить
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </Card>
+            ))
+          )}
         </div>
       </Card>
         </TabsContent>
