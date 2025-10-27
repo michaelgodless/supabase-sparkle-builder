@@ -21,6 +21,7 @@ import {
 interface Property {
   id: string;
   property_number: number;
+  property_developer: string | null;
   price: number;
   currency: string;
   property_size: number | null;
@@ -97,6 +98,7 @@ export default function NewBuildings() {
         .select(`
           id,
           property_number,
+          property_developer,
           price,
           currency,
           property_size,
@@ -369,8 +371,8 @@ export default function NewBuildings() {
                 </div>
                 <CardHeader>
                   <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-xl">
-                      Объект №{property.property_number}
+                    <CardTitle className="text-xl line-clamp-1">
+                      {property.property_developer || `Объект №${property.property_number}`}
                     </CardTitle>
                     <Badge variant="secondary">
                       Дежурка

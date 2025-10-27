@@ -257,7 +257,7 @@ export default function PropertyDetails() {
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-foreground">
-              Объявление № {property.property_number}
+              {property.property_developer || `Объект № ${property.property_number}`}
             </h1>
             <p className="text-muted-foreground">{property.address}</p>
           </div>

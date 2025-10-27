@@ -464,8 +464,8 @@ const Properties = () => {
                     </div>
                     <CardHeader>
                       <div className="flex items-start justify-between gap-2">
-                        <CardTitle className="text-xl">
-                          Объект №{property.property_number}
+                        <CardTitle className="text-xl line-clamp-1">
+                          {property.property_developer || `Объект №${property.property_number}`}
                         </CardTitle>
                         <Badge variant="secondary">
                           {property.property_categories?.name || "—"}

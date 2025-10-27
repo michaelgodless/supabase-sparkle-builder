@@ -15,6 +15,7 @@ import { toast } from "sonner";
 interface PropertyDetails {
   id: string;
   property_number: number;
+  property_developer: string | null;
   price: number;
   currency: string;
   exchange_rate: number | null;
@@ -61,6 +62,7 @@ const PropertyPublicDetails = () => {
           `
           id,
           property_number,
+          property_developer,
           price,
           currency,
           exchange_rate,
@@ -224,7 +226,9 @@ const PropertyPublicDetails = () => {
             {/* Header */}
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h1 className="text-3xl font-bold mb-2">Объект №{property.property_number}</h1>
+                <h1 className="text-3xl font-bold mb-2">
+                  {property.property_developer || `Объект №${property.property_number}`}
+                </h1>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <MapPin className="h-4 w-4" />
                   <span>{property.property_areas?.name || "Район не указан"}</span>
